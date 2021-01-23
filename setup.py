@@ -6,12 +6,12 @@ with open("README.md", "r") as fh:
 setup(
     name='caffoa',
     version='0.2.0',
-    packages=['azyc'],
+    packages=['caffoa'],
     url='https://github.com/claasd/caffoa',
     license='MIT',
     author='Claas Diederichs',
     author_email='',
-    description='Create Azure Functions From Open Api',
+    description='Create Azure Functions From Open Api (for C#)',
     long_description=long_description,
     long_description_content_type="text/markdown",
     classifiers=[

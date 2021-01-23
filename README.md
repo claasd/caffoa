@@ -1,7 +1,7 @@
 # aoffoa: Create Azure Function From Open Api
 
 [![PyPI - License](https://img.shields.io/pypi/l/caffoa)](https://pypi.org/project/caffoa/)
-[![PyPI](https://img.shields.io/pypi/v/caffoa)](https://pypi.org/project/cafooa/)
+[![PyPI](https://img.shields.io/pypi/v/caffoa)](https://pypi.org/project/caffoa/)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/caffoa)
 
 Tool to autogenerate azure function templates for .NET from openapi declaration.

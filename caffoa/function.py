@@ -1,3 +1,4 @@
+import os
 from typing import List, Union
 
 from prance import ResolvingParser
@@ -27,7 +28,6 @@ class Parameter:
 
 def create_function_files(endpoints: List[EndPoint], output_path: str, class_name: str = "UserManagement",
                           namespace: str = "UserManagementFunction"):
-    print(__file__)
     with open(TEMPLATE_FOLDER + "/FunctionMethod.cs", "r", encoding="utf-8") as f:
         method_template = f.read()
     with open(TEMPLATE_FOLDER + "/FunctionTemplate.cs", "r", encoding="utf-8") as f:
@@ -58,9 +58,15 @@ def create_function_files(endpoints: List[EndPoint], output_path: str, class_nam
         interface_methods.append(interface_method_template.format(NAME=ep.name, OPERATION=ep.operation, PATH=ep.path,
                                                                   PARAMS=params_for_interface,
                                                                   DOC="\n\t\t/// ".join(ep.documentation)))
-    with open(f"{output_path}/{class_name}Function.generated.cs", "w", encoding="utf-8") as f:
+
+    function_file_name = os.path.abspath(f"{output_path}/{class_name}Function.generated.cs")
+    print(f"Writing Function to {function_file_name}")
+    with open(function_file_name, "w", encoding="utf-8") as f:
         f.write(class_template.format(METHODS="\n\n".join(methods), NAMESPACE=namespace, CLASSNAME=class_name))
-    with open(f"{output_path}/I{class_name}Service.generated.cs", "w", encoding="utf-8") as f:
+    interface_file_name = os.path.abspath(f"{output_path}/I{class_name}Service.generated.cs")
+    print(f"Writing Interface to {interface_file_name}")
+    with open(interface_file_name, "w", encoding="utf-8") as f:
+
         f.write(interface_template.format(METHODS="\n\n".join(interface_methods), NAMESPACE=namespace,
                                           CLASSNAME=class_name))
 

@@ -91,13 +91,18 @@ def write_model(model: ModelData, output_path: str, namespace: str):
         properties.append(
             prop_Template.format(TYPE=property.type, NAMELOWER=property.name, NAMEUPPER=to_camelcase(property.name),
                                  JSON_EXTRA=extra))
-    with open(output_path + f"/{model.name}.generated.cs", "w", encoding="utf-8") as f:
+    file_name = os.path.abspath(output_path + f"/{model.name}.generated.cs")
+    print(f"Writing class {model.name} -> {file_name}")
+    with open(file_name, "w", encoding="utf-8") as f:
         f.write(model_Template.format(NAMESPACE=namespace, NAME=model.name, PROPERTIES="\n\n".join(properties),
                                       IMPORTS=imports, PARENTS=parents))
     if has_dates:
         with open(TEMPLATE_FOLDER + "/DateSerializer.cs", "r", encoding="utf-8") as f:
             date_converter_template = f.read()
-        with open(output_path + f"/CustomJsonDateConverter.generated.cs", "w", encoding="utf-8") as f:
+
+        file_name = os.path.abspath(output_path + f"/CustomJsonDateConverter.generated.cs")
+        print(f"Writing CustomJsonDateConverter -> {file_name}")
+        with open(file_name, "w", encoding="utf-8") as f:
             f.write(date_converter_template.format(NAMESPACE=namespace))
 
 

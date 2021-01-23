@@ -8,7 +8,7 @@ setup(
     version='0.2.0',
     packages=['azyc'],
     url='https://github.com/claasd/caffoa',
-    license='MIT',
+    license='MITNFA',
     author='Claas Diederichs',
     author_email='',
     description='Create Azure Functions From Open Api',
@@ -23,6 +23,7 @@ setup(
     ],
     python_requires='>=3.6',
     install_requires=[
-        "PyYaml",
+        "prance",
+        "openapi-spec-validator"
     ]
 )

@@ -9,6 +9,8 @@ Instead of generating stubs, the goal is to be able to change the api and re-gen
 
 Currently considered alpha state. If something does not work that you feel should work, create a ticket with your openapi spec.
 
+It uses [prance](https://pypi.org/project/prance/) for parsing the openapi spec.
+
 # Usage
 
 ## Create Azure Function template:

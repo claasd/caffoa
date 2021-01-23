@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='caffoa',
-    version='0.2.0',
+    version='0.2.2',
     packages=['caffoa'],
     url='https://github.com/claasd/caffoa',
     license='MIT',

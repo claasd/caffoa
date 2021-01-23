@@ -1,4 +1,4 @@
-# aoffoa: Create Azure Function From Open Api
+# coffoa: Create Azure Function From Open Api
 
 [![PyPI - License](https://img.shields.io/pypi/l/caffoa)](https://pypi.org/project/caffoa/)
 [![PyPI](https://img.shields.io/pypi/v/caffoa)](https://pypi.org/project/caffoa/)

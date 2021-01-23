@@ -8,7 +8,7 @@ setup(
     version='0.2.0',
     packages=['azyc'],
     url='https://github.com/claasd/caffoa',
-    license='MITNFA',
+    license='MIT',
     author='Claas Diederichs',
     author_email='',
     description='Create Azure Functions From Open Api',

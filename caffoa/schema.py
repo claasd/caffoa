@@ -1,18 +1,19 @@
 import os
-from typing import List, Set, Union
+from typing import List, Set, Union, Optional
 
 from prance import BaseParser
 from caffoa.converter import parse_type, to_camelcase, is_date, TEMPLATE_FOLDER
 
 
 class MemberData:
-    def __init__(self, name: str, type: str, is_date: bool, nullable : bool, default_value: Union[None, str], is_required: bool):
+    def __init__(self, name: str, type: str, is_date: bool, nullable : bool, default_value: Optional[str], is_required: bool, description : Optional[str]):
         self.name = name
         self.type = type
         self.is_date = is_date
         self.nullable = nullable
         self.default_value = default_value
         self.is_required = is_required
+        self.description = description
 
 
 class ModelData:
@@ -51,6 +52,10 @@ def parse_schema(schema: dict, class_name: str, parents=None):
     elif "properties" in schema or schema["type"] == "object":
         required_props = schema.get('required', list())
         for name, data in schema["properties"].items():
+            description = None
+            if "description" in data:
+                description = data["description"]
+                print(description)
             isdate = False
             nullable = "nullable" in data and data["nullable"]
             default_value = None
@@ -88,7 +93,7 @@ def parse_schema(schema: dict, class_name: str, parents=None):
 
 
 
-            members.append(MemberData(name, typename, isdate, nullable, default_value, name in required_props))
+            members.append(MemberData(name, typename, isdate, nullable, default_value, name in required_props, description))
     return ModelData(to_camelcase(class_name), parents, members, imports)
 
 
@@ -121,9 +126,14 @@ def write_model(model: ModelData, output_path: str, namespace: str):
         elif not property.nullable:
             json_property_extra = ", Required = Required.DisallowNull"
 
+        description = ""
+        if property.description != None:
+            description = f"/// <summary>\n\t\t/// {property.description}\n\t\t/// </summary>\n\t\t"
+
         properties.append(
             prop_Template.format(TYPE=property.type, NAMELOWER=property.name, NAMEUPPER=to_camelcase(property.name),
-                                 JSON_EXTRA=extra, DEFAULT=default_str, JSON_PROPERTY_EXTRA=json_property_extra))
+                                 JSON_EXTRA=extra, DEFAULT=default_str, JSON_PROPERTY_EXTRA=json_property_extra,
+                                 DESCRIPTION=description))
     file_name = os.path.abspath(output_path + f"/{model.name}.generated.cs")
     print(f"Writing class {model.name} -> {file_name}")
     with open(file_name, "w", encoding="utf-8") as f:

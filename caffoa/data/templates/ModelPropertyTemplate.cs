@@ -1,2 +1,2 @@
-        {JSON_EXTRA}[JsonProperty("{NAMELOWER}")]
-        public {TYPE} {NAMEUPPER};
+        {JSON_EXTRA}[JsonProperty("{NAMELOWER}"{JSON_PROPERTY_EXTRA})]
+        public {TYPE} {NAMEUPPER}{DEFAULT};

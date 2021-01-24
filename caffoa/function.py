@@ -42,13 +42,13 @@ def create_function_files(endpoints: List[EndPoint], output_path: str, class_nam
         params_with_names = list()
         params_with_names_for_interface = list()
         param_names = list()
-        if ep.needs_content:
-            param_names.append("req.Content")
-            params_with_names_for_interface.append("HttpContent content")
         for param in ep.parameters:
             params_with_names.append(f"{param.type} {param.name}")
             params_with_names_for_interface.append(f"{param.type} {param.name}")
             param_names.append(param.name)
+        if ep.needs_content:
+            param_names.append("req.Content")
+            params_with_names_for_interface.append("HttpContent contentPayload")
         params_for_interface = ", ".join(params_with_names_for_interface)
         params_for_function = ", " + params_for_interface if len(params_with_names) > 0 else ""
         param_name_str = ", ".join(param_names)

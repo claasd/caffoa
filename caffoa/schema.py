@@ -1,15 +1,18 @@
 import os
-from typing import List, Set
+from typing import List, Set, Union
 
 from prance import BaseParser
 from caffoa.converter import parse_type, to_camelcase, is_date, TEMPLATE_FOLDER
 
 
 class MemberData:
-    def __init__(self, name: str, type: str, is_date: bool):
+    def __init__(self, name: str, type: str, is_date: bool, nullable : bool, default_value: Union[None, str], is_required: bool):
         self.name = name
         self.type = type
         self.is_date = is_date
+        self.nullable = nullable
+        self.default_value = default_value
+        self.is_required = is_required
 
 
 class ModelData:
@@ -44,29 +47,48 @@ def parse_schema(schema: dict, class_name: str, parents=None):
                 parents.append(class_name_from_ref(element["$ref"]))
             if "type" in element or "properties" in element:
                 return parse_schema(element, class_name, parents)
+
     elif "properties" in schema or schema["type"] == "object":
-        isdate = False
+        required_props = schema.get('required', list())
         for name, data in schema["properties"].items():
+            isdate = False
+            nullable = "nullable" in data and data["nullable"]
+            default_value = None
             if "$ref" in data:
-                type = class_name_from_ref(data["$ref"])
+                typename = class_name_from_ref(data["$ref"])
+                if not nullable:
+                    default_value = f"new {typename}()"
+                else:
+                    default_value = "null"
             elif "type" not in data:
-                print(data)
-                raise Warning("Cannot parse property without type")
+                raise Warning(f"Cannot parse property without type for '{name}' in '{class_name}'")
             elif data["type"] == "object":
                 if "properties" in data:
-                    print(data)
-                    raise Warning("Cannot parse property trees")
+                    raise Warning(f"Cannot parse property trees: '{name}' child of '{class_name}' should be declared in own schema directly under 'components'")
                 if "additionalProperties" in data:
                     props = data['additionalProperties']
                     if "$ref" not in props:
                         raise Warning("Cannot parse additionalProperties without direct reference")
-                    type = class_name_from_ref(props["$ref"])
-                    type = f"Dictionary<string, {type}>"
+                    typename = class_name_from_ref(props["$ref"])
+                    typename = f"Dictionary<string, {typename}>"
                     imports.add("using System.Collections.Generic;\n")
             else:
-                type = parse_type(data)
+                typename = parse_type(data, nullable)
                 isdate = is_date(data)
-            members.append(MemberData(name, type, isdate))
+                if "default" in data:
+                    default_value = data["default"]
+                    if type(default_value) is str:
+                        default_value = f'"{default_value}"'
+                    elif type(default_value) is bool:
+                        default_value = "true" if default_value else "false"
+                    elif default_value is None:
+                        default_value = "null"
+                elif nullable:
+                    default_value = "null"
+
+
+
+            members.append(MemberData(name, typename, isdate, nullable, default_value, name in required_props))
     return ModelData(to_camelcase(class_name), parents, members, imports)
 
 
@@ -88,9 +110,20 @@ def write_model(model: ModelData, output_path: str, namespace: str):
             has_dates = True
         else:
             extra = ""
+        default_str=""
+        if property.default_value != None:
+            default_str = f" = {property.default_value}"
+        json_property_extra = ""
+        if property.is_required and property.nullable:
+            json_property_extra = ", Required = Required.AllowNull"
+        elif property.is_required:
+            json_property_extra = ", Required = Required.Always"
+        elif not property.nullable:
+            json_property_extra = ", Required = Required.DisallowNull"
+
         properties.append(
             prop_Template.format(TYPE=property.type, NAMELOWER=property.name, NAMEUPPER=to_camelcase(property.name),
-                                 JSON_EXTRA=extra))
+                                 JSON_EXTRA=extra, DEFAULT=default_str, JSON_PROPERTY_EXTRA=json_property_extra))
     file_name = os.path.abspath(output_path + f"/{model.name}.generated.cs")
     print(f"Writing class {model.name} -> {file_name}")
     with open(file_name, "w", encoding="utf-8") as f:

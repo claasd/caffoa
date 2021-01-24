@@ -22,7 +22,7 @@ This will create two files in the output folder:
 * IMyClassService.generated.cs
 
 Your job now is to create an implementation for the `IMyClassService` interface.
-Furthermore, the `MyClassNameFunction` is created as shared static class, with a shared static method called `IMyClassService Service(HttpRequestMessage, ILogger log);`
+Furthermore, the `MyClassNameFunction` is created as shared static class, with a shared static method called `private IMyClassService Service(HttpRequestMessage req, ILogger log);`
 You need to implement this function in a different file (I suggest `MyClassFunction.cs`), that returns your implementation of the interface. You need tu use C# 9 to use this.
 
 Now implement all the logic in your implementation of the interface. You can now change your API, and regenerate the generated files without overwriting your code.

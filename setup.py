@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='caffoa',
-    version='0.4.2',
+    version='0.5.0',
     packages=['caffoa'],
     package_data={
         'caffoa': ['./data/templates/*'],
@@ -22,12 +22,14 @@ setup(
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.6',
     install_requires=[
         "prance",
-        "openapi-spec-validator"
+        "openapi-spec-validator",
+        "PyYaml"
     ]
 )

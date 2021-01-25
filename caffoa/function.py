@@ -84,6 +84,7 @@ def generate_functions(input_file: str, output_path: str, class_name: Union[str,
         class_name = namespace
     parser = ResolvingParser(input_file, strict=False)
     endpoints = list()
+    os.makedirs(output_path, exist_ok=True)
     for path, options in parser.specification['paths'].items():
         path = str(path).strip('/')
         base_parameters = list()

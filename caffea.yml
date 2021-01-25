@@ -1,0 +1,9 @@
+services:
+  - apiPath: ../buntspecht/UserManagement/apis/userservice.openapi.yml
+    function:
+      name: MyClass
+      namespace: MyNamespace
+      targetFolder: ./output
+    model:
+      namespace: My.Model
+      targetFolder: ./output/Model

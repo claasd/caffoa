@@ -13,11 +13,29 @@ It uses [prance](https://pypi.org/project/prance/) for parsing the openapi spec.
 
 # Usage
 
-## Create Azure Function template:
-```bash
-python3 -m caffoa functions --input path_to_openapi_yaml --output-folder path/to/output/ -- namespace Company.Function --class-name MyClassName
+you need a small config file in yaml format:
+```yaml
+services:
+  - apiPath: userservice.openapi.yml
+    function:
+      name: MyClassName
+      namespace: MyNamespace
+      targetFolder: ./output
+    model:
+      namespace: MyNamespace.Model
+      targetFolder: ./output/Model
 ```
-This will create two files in the output folder:
+You can add multiple services. Also, you can omit either `model` or `function` if you do not need one of them.
+Then, call the tool: 
+
+```bash
+python3 -m caffoa --input path_to_config.yml
+```
+
+## Create Azure Function template:
+
+If you specified the `function` part in the config file, 
+the tool will create two files in the specified target folder:
 * MyClassNameFunction.generated.cs
 * IMyClassService.generated.cs
 
@@ -29,15 +47,11 @@ Now implement all the logic in your implementation of the interface. You can now
 
 ## Create data objects from schemas
 
+If you specified the `model` part in the config file, the tool will generate a file for each schema defined in the components section of the openapi definition. The filename will be the schema name converted to UpperCamelCase with generated.cs added to the end (Example: `user`will create a class `User` defined in the file `User.generated.cs`).
+The file will contain a shared class, with all properties of the schema. You can implement a shared class in a different file to add logic to these objects.
+
+### Restrictions 
 * The schema must be defined in the components section.
 * Furthermore, schemas may not be nested without reference.
 (You can easily overcome this restriction by defining more schemas in the components section and have them reference each other.)
-* allOf is implemented as inheritance.
-
-```bash
-python3 -m caffoa schemas --input path_to_openapi_yaml --output-folder path/to/output/models/ -- namespace Company.Function.Models
-```
-
-this will generate a file for each schema defined in the components section. The filename will be the schema name converted to UpperCamelCase with generated.cs added to the end.
-The file will contain a shared class, with all properties of the schema. You can implement a shared class in a different file to add logic to these objects.
- 
+* allOf is implemented as inheritance

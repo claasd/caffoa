@@ -154,5 +154,6 @@ def generate_schemas(input_file: str, output_path: str, namespace: str):
     models = list()
     for name, schema in parser.specification["components"]["schemas"].items():
         models.append(parse_schema(schema, name))
+    os.makedirs(output_path, exist_ok=True)
     for model in models:
         write_model(model, output_path, namespace)

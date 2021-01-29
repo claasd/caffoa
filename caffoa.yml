@@ -1,5 +1,5 @@
 services:
-  - apiPath: ../buntspecht/UserManagement/apis/userservice.openapi.yml
+  - apiPath: D:\data\btc\buntspecht\ReadingsService\apis\readings.openapi.yml
     function:
       name: MyClass
       namespace: MyNamespace

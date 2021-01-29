@@ -7,7 +7,7 @@ from caffoa.schema import generate_schemas
 
 def execute():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", default="caffea.yml", help="Path to config file (Default: caffea.yml)")
+    parser.add_argument("--config", default="caffoa.yml", help="Path to config file (Default: caffoa.yml)")
     args = parser.parse_args()
     with open(args.config, "r", encoding="utf-8") as f:
         data = yaml.safe_load(f)

@@ -28,8 +28,10 @@ def execute():
 
         if "model" in config:
             model = config["model"]
+            prefix = model.get("prefix","")
+            suffix = model.get("suffix", "")
             if  not "namespace" in model or not "targetFolder" in model:
                 raise Warning(f"model needs children 'namespace' and 'targetFolder' in service #{id}")
 
-            generate_schemas(api, model["targetFolder"], model['namespace'])
+            generate_schemas(api, model["targetFolder"], model['namespace'], prefix, suffix)
 

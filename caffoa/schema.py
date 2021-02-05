@@ -63,12 +63,8 @@ def write_model(model: ModelData, output_path: str, namespace: str):
             f.write(date_converter_template.format(NAMESPACE=namespace))
 
 
-def generate_schemas(input_file: str, output_path: str, namespace: str):
-    # parser = BaseParser(input_file, strict=False)
-    #models = list()
-    # for name, schema in parser.specification["components"]["schemas"].items():
-    #    models.append(parse_schema(schema, name))
-    parser = SchemaParser()
+def generate_schemas(input_file: str, output_path: str, namespace: str, prefix: str, suffix: str):
+    parser = SchemaParser(prefix, suffix)
     models = parser.parse(input_file)
     os.makedirs(output_path, exist_ok=True)
     for model in models:

@@ -29,7 +29,9 @@ class ModelData:
 
 
 class SchemaParser:
-    def __init__(self):
+    def __init__(self, prefix: str, suffix: str):
+        self.prefix = prefix
+        self.suffix = suffix
         self.known_types = dict()
 
     def parse(self, input_file: str) -> List[ModelData]:
@@ -40,16 +42,16 @@ class SchemaParser:
 
         objects = list()
         for class_name, schema in schemas.items():
-            if class_name in self.known_types:
+            if self.class_name(class_name) in self.known_types:
                 continue
             objects.append(self.parse_objects(class_name, schema))
         return objects
 
     def parse_simple(self, class_name: str, schema: dict):
-        class_name = to_camelcase(class_name)
         if "type" in schema:
             typename = schema["type"]
             if typename in ["string", "integer", "number", "boolean"]:
+                class_name = self.class_name(class_name)
                 self.known_types[class_name] = schema
 
     def parse_objects(self, class_name: str, schema: dict, parents=None):
@@ -112,12 +114,13 @@ class SchemaParser:
                     isdate = self.is_date(data)
 
                 members.append(
-                    MemberData(name, typename, isdate, nullable, default_value, name in required_props, description, enums))
+                    MemberData(name, typename, isdate, nullable, default_value, name in required_props, description,
+                               enums))
         description = None
         if "description" in schema:
             description = schema["description"]
 
-        return ModelData(to_camelcase(class_name), parents, members, imports, description)
+        return ModelData(self.class_name(class_name), parents, members, imports, description)
 
     def handle_any_of(self, data: dict, name: str, class_name: str):
         anyof = data["anyOf"]
@@ -182,10 +185,12 @@ class SchemaParser:
             return False
         return schema['type'] == "string" and schema['format'] == "date"
 
-    @staticmethod
-    def class_name_from_ref(param: str):
+    def class_name_from_ref(self, param: str):
         name = param.split('/')[-1]
-        return to_camelcase(name)
+        return self.class_name(name)
+
+    def class_name(self, name):
+        return self.prefix + to_camelcase(name) + self.suffix
 
     def handle_all_of(self, class_name: str, schema: dict, parents: set):
         to_generate = None
@@ -202,7 +207,7 @@ class SchemaParser:
             to_generate = dict()
         return self.parse_objects(class_name, to_generate, parents)
 
-    def handle_enums(self, name: str, data : dict):
+    def handle_enums(self, name: str, data: dict):
         if "enum" not in data:
             return None
         enum = data["enum"]
@@ -213,8 +218,6 @@ class SchemaParser:
             return None
         if typename == "string":
             enum = map(lambda s: f'"{s}"', enum)
-        name = name.upper()+"_ALLOWED_VALUES"
+        name = name.upper() + "_ALLOWED_VALUES"
         values = ", ".join(enum)
         return f"public static readonly ImmutableArray<{typename}> {name} = new ImmutableArray<{typename}>() {{ {values} }};"
-
-

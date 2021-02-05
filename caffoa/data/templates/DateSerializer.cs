@@ -5,7 +5,7 @@ namespace {NAMESPACE} {{
     /// custom converter to create date formats.
     /// By default. Newtonsoft-Json only supports DateTime formats.
     /// </summary>
-    class CustomJsonDateConverter : IsoDateTimeConverter
+    public class CustomJsonDateConverter : IsoDateTimeConverter
     {{
         public CustomJsonDateConverter()
         {{

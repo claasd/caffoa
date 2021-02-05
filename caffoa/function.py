@@ -50,7 +50,7 @@ def create_function_files(endpoints: List[EndPoint], output_path: str, class_nam
             param_names.append("req.Content")
             params_with_names_for_interface.append("HttpContent contentPayload")
         params_for_interface = ", ".join(params_with_names_for_interface)
-        params_for_function = ", " + params_for_interface if len(params_with_names) > 0 else ""
+        params_for_function = ", " + ", ".join(params_with_names) if len(params_with_names) > 0 else ""
         param_name_str = ", ".join(param_names)
         methods.append(
             method_template.format(NAME=ep.name, OPERATION=ep.operation, PATH=ep.path, PARAMS=params_for_function,

@@ -24,7 +24,7 @@ def write_model(model: ModelData, output_path: str, namespace: str):
             extra = ""
         default_str = ""
         if property.default_value != None:
-            default_str = f" = {property.default_value}"
+            default_str = f" = {property.default_value};"
         json_property_extra = ""
         if property.is_required and property.nullable:
             json_property_extra = ", Required = Required.AllowNull"
@@ -63,8 +63,8 @@ def write_model(model: ModelData, output_path: str, namespace: str):
             f.write(date_converter_template.format(NAMESPACE=namespace))
 
 
-def generate_schemas(input_file: str, output_path: str, namespace: str, prefix: str, suffix: str):
-    parser = SchemaParser(prefix, suffix)
+def generate_schemas(input_file: str, output_path: str, namespace: str, prefix: str, suffix: str, excludes: list):
+    parser = SchemaParser(prefix, suffix, excludes)
     models = parser.parse(input_file)
     os.makedirs(output_path, exist_ok=True)
     for model in models:

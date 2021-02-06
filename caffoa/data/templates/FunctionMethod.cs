@@ -6,5 +6,5 @@
             [HttpTrigger(AuthorizationLevel.Function, "{OPERATION}", Route = "{PATH}")]
             HttpRequestMessage req{PARAMS}, ILogger log)
         {{
-            return await Service(req, log).{NAME}({PARAM_NAMES});
+            {START_BOILERPLATE}return await Service(req, log).{NAME}({PARAM_NAMES});{END_BOILERPLATE}
         }}

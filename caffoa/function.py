@@ -1,5 +1,5 @@
 import os
-from typing import List, Union
+from typing import List, Union, Optional
 
 from prance import ResolvingParser
 
@@ -26,8 +26,15 @@ class Parameter:
         self.name = name
 
 
-def create_function_files(endpoints: List[EndPoint], output_path: str, class_name: str = "UserManagement",
-                          namespace: str = "UserManagementFunction"):
+def create_function_files(endpoints: List[EndPoint], output_path: str, class_name: str,
+                          namespace: str, boilerplate: Optional[str], imports: List[str]):
+    if boilerplate != None:
+        boilerplate = boilerplate.replace("\n", "\n\t\t\t")
+        boilerplate = boilerplate.split("{BASE}")
+        assert len(boilerplate) == 2
+    else:
+        boilerplate = ('', '')
+
     with open(TEMPLATE_FOLDER + "/FunctionMethod.cs", "r", encoding="utf-8") as f:
         method_template = f.read()
     with open(TEMPLATE_FOLDER + "/FunctionTemplate.cs", "r", encoding="utf-8") as f:
@@ -54,16 +61,20 @@ def create_function_files(endpoints: List[EndPoint], output_path: str, class_nam
         param_name_str = ", ".join(param_names)
         methods.append(
             method_template.format(NAME=ep.name, OPERATION=ep.operation, PATH=ep.path, PARAMS=params_for_function,
-                                   PARAM_NAMES=param_name_str))
+                                   PARAM_NAMES=param_name_str, START_BOILERPLATE=boilerplate[0],
+                                   END_BOILERPLATE=boilerplate[1]))
         interface_methods.append(interface_method_template.format(NAME=ep.name, OPERATION=ep.operation, PATH=ep.path,
                                                                   PARAMS=params_for_interface,
                                                                   DOC="\n\t\t/// ".join(ep.documentation)))
 
+    imports = map(lambda x: f"using {x};\n", imports)
     function_file_name = os.path.abspath(f"{output_path}/{class_name}Function.generated.cs")
     print(f"Writing Function to {function_file_name}")
     with open(function_file_name, "w", encoding="utf-8") as f:
-        f.write(class_template.format(METHODS="\n\n".join(methods), NAMESPACE=namespace, CLASSNAME=class_name))
+        f.write(class_template.format(METHODS="\n\n".join(methods), NAMESPACE=namespace, CLASSNAME=class_name,
+                                      IMPORTS="".join(imports)))
     interface_file_name = os.path.abspath(f"{output_path}/I{class_name}Service.generated.cs")
+
     print(f"Writing Interface to {interface_file_name}")
     with open(interface_file_name, "w", encoding="utf-8") as f:
 
@@ -79,7 +90,8 @@ def parse_params(params: list) -> list:
     return parameters
 
 
-def generate_functions(input_file: str, output_path: str, class_name: Union[str, None], namespace: str):
+def generate_functions(input_file: str, output_path: str, class_name: Union[str, None], namespace: str,
+                       boilerplate: Optional[str], imports: List[str]):
     if class_name is None:
         class_name = namespace
     parser = ResolvingParser(input_file, strict=False)
@@ -106,4 +118,4 @@ def generate_functions(input_file: str, output_path: str, class_name: Union[str,
             needs_content = "requestBody" in config
             endpoints.append(EndPoint(operation_id, path, operation, parameters, documentation, needs_content))
 
-    create_function_files(endpoints, output_path, class_name, namespace)
+    create_function_files(endpoints, output_path, class_name, namespace, boilerplate, imports)

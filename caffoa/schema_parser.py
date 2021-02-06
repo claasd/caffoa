@@ -29,20 +29,25 @@ class ModelData:
 
 
 class SchemaParser:
-    def __init__(self, prefix: str, suffix: str):
+    def __init__(self, prefix: str, suffix: str, excludes: list):
         self.prefix = prefix
         self.suffix = suffix
         self.known_types = dict()
+        self.excludes = excludes
 
     def parse(self, input_file: str) -> List[ModelData]:
         parser = BaseParser(input_file, strict=False)
         schemas = parser.specification["components"]["schemas"]
         for class_name, schema in schemas.items():
+            if class_name in self.excludes:
+                continue
             self.parse_simple(class_name, schema)
 
         objects = list()
         for class_name, schema in schemas.items():
             if self.class_name(class_name) in self.known_types:
+                continue
+            if class_name in self.excludes:
                 continue
             objects.append(self.parse_objects(class_name, schema))
         return objects

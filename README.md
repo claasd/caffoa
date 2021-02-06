@@ -26,6 +26,8 @@ services:
       targetFolder: ./output/Model
       #prefix: Base # you can add an optional prefix to your model classes
       #suffix: Object # you can add an optional suffix to your model classes
+      #excludes:
+      # - objectToExclude
 ```
 You can add multiple services. Also, you can omit either `model` or `function` if you do not need one of them.
 Then, call the tool: 

@@ -24,7 +24,9 @@ def execute():
             function = config["function"]
             if not "name" in function or not "namespace" in function or not "targetFolder" in function:
                 raise Warning(f"function needs children 'name', 'namespace' and 'targetFolder' in service #{id}")
-            generate_functions(api,function['targetFolder'], function['name'], function["namespace"])
+            boilerplate = function.get('boilerplate')
+            imports = function.get('imports', list())
+            generate_functions(api,function['targetFolder'], function['name'], function["namespace"], boilerplate, imports)
 
         if "model" in config:
             model = config["model"]
@@ -32,6 +34,6 @@ def execute():
             suffix = model.get("suffix", "")
             if  not "namespace" in model or not "targetFolder" in model:
                 raise Warning(f"model needs children 'namespace' and 'targetFolder' in service #{id}")
-
-            generate_schemas(api, model["targetFolder"], model['namespace'], prefix, suffix)
+            excludes = list(model.get('excludes', list()))
+            generate_schemas(api, model["targetFolder"], model['namespace'], prefix, suffix, excludes)
 

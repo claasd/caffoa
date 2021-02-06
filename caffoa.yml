@@ -4,8 +4,20 @@ services:
       name: MyClass
       namespace: MyNamespace
       targetFolder: ./output
+      boilerplate: |
+        try {
+            {BASE}
+        } catch(RestResponseError err) {
+            return err.ToResponseMessage();
+        }
+      imports:
+        - DataBackend.Common.Rest
+
     model:
       namespace: My.Model
       targetFolder: ./output/Model
       prefix: Base
-      suffix: RestObject
+      suffix: ""
+      excludes:
+        - user
+

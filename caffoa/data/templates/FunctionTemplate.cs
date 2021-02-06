@@ -14,8 +14,8 @@ namespace {NAMESPACE}
     public static partial class {CLASSNAME}Functions
     {{
 
-        /// implement this in a partial class
-        //private static partial I{CLASSNAME}Service Service(HttpRequestMessage req, ILogger log);
+        // implement this in a partial class
+        // private static partial I{CLASSNAME}Service Service(HttpRequestMessage req, ILogger log);
 
 {METHODS}
     }}

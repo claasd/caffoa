@@ -1,4 +1,4 @@
         /// <summary>
         /// {DOC}
         /// </summary>
-        public Task<HttpResponseMessage> {NAME}({PARAMS});
+        Task<HttpResponseMessage> {NAME}({PARAMS});

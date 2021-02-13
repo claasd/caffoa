@@ -47,9 +47,9 @@ def write_model(model: ModelData, output_path: str, namespace: str):
                                  DESCRIPTION=description, ENUMS=enums))
     file_name = os.path.abspath(output_path + f"/{model.name}.generated.cs")
     print(f"Writing class {model.name} -> {file_name}")
-    description = ""
+    description = "/// AUTOGENERED BY caffoa ///\n\t"
     if model.description != None:
-        description = f"/// <summary>\n\t/// {model.description}\n\t/// </summary>\n\t"
+        description += f"/// <summary>\n\t/// {model.description}\n\t/// </summary>\n\t"
     with open(file_name, "w", encoding="utf-8") as f:
         f.write(model_Template.format(NAMESPACE=namespace, NAME=model.name, PROPERTIES="\n\n".join(properties),
                                       IMPORTS=imports, PARENTS=parents, DESCRIPTION=description))

@@ -1,4 +1,5 @@
 from typing import Tuple, Optional, List, Set
+import re
 
 from prance import BaseParser
 
@@ -221,8 +222,22 @@ class SchemaParser:
         typename, _ = self.handle_default_type(data, False)
         if typename not in ["string", "int", "long", "double"]:
             return None
-        if typename == "string":
-            enum = map(lambda s: f'"{s}"', enum)
-        name = name.upper() + "_ALLOWED_VALUES"
-        values = ", ".join(enum)
-        return f"public static readonly ImmutableArray<{typename}> {name} = new ImmutableArray<{typename}>() {{ {values} }};"
+
+        names = list()
+        lines = list()
+        for value in enum:
+            varname = name + "_" +value
+            varname = re.sub(r"[^A-Za-z0-9]+", '_', varname)
+            varname = varname.upper()
+            names.append(varname)
+            if typename == "string":
+                value = f'"{value}"'
+            line = f"public const {typename} {varname} = {value};"
+            lines.append(line)
+
+
+        listname = name.upper() + "_ALLOWED_VALUES"
+        values = ", ".join(names)
+        line = f"public static readonly ImmutableArray<{typename}> {listname} = new ImmutableArray<{typename}>() {{ {values} }};"
+        lines.append(line)
+        return "\n\t\t".join(lines)

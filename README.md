@@ -21,6 +21,22 @@ services:
       name: MyClassName
       namespace: MyNamespace
       targetFolder: ./output
+
+      ## you can add boilerplate code to each invocation. Make sure to put {CODE}
+      ## in the boilerplate at the position where the generated invocation should be placed
+      #boilerplate: |
+      #  try {
+      #      {CODE}
+      #  catch(SomethingNotFoundException e) {
+      #    return new HttpResponseMessage(HttpStatusCode.NotFound)
+      #    {
+      #        Content = new StringContent(err.Message)
+      #    };
+      #  }
+
+      ## if you need specific imports for your boilerpalte, add them here:
+      #imports:
+      #  - MyNamespace.Exceptions.SomethingNotFoundException
     model:
       namespace: MyNamespace.Model
       targetFolder: ./output/Model

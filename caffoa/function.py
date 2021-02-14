@@ -29,7 +29,7 @@ class Parameter:
 def create_function_files(endpoints: List[EndPoint], output_path: str, class_name: str,
                           namespace: str, boilerplate: Optional[str], imports: List[str]):
     if boilerplate != None:
-        boilerplate = boilerplate.replace("\n", "\n\t\t\t")
+        boilerplate = boilerplate.replace("\n", "\n\t\t\t\t")
         boilerplate = boilerplate.split("{BASE}")
         assert len(boilerplate) == 2
     else:
@@ -49,10 +49,12 @@ def create_function_files(endpoints: List[EndPoint], output_path: str, class_nam
         params_with_names = list()
         params_with_names_for_interface = list()
         param_names = list()
+        excpetion_params = list()
         for param in ep.parameters:
             params_with_names.append(f"{param.type} {param.name}")
             params_with_names_for_interface.append(f"{param.type} {param.name}")
             param_names.append(param.name)
+            excpetion_params.append(f'wrappedException.Data["p_{param.name}"] = {param.name};\n\t\t\t\t')
         if ep.needs_content:
             param_names.append("req.Content")
             params_with_names_for_interface.append("HttpContent contentPayload")
@@ -62,6 +64,7 @@ def create_function_files(endpoints: List[EndPoint], output_path: str, class_nam
         methods.append(
             method_template.format(NAME=ep.name, OPERATION=ep.operation, PATH=ep.path, PARAMS=params_for_function,
                                    PARAM_NAMES=param_name_str, START_BOILERPLATE=boilerplate[0],
+                                   EXCEPTION_PARAMS="".join(excpetion_params),
                                    END_BOILERPLATE=boilerplate[1]))
         interface_methods.append(interface_method_template.format(NAME=ep.name, OPERATION=ep.operation, PATH=ep.path,
                                                                   PARAMS=params_for_interface,

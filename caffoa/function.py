@@ -71,7 +71,7 @@ def create_function_files(endpoints: List[EndPoint], output_path: str, class_nam
                                                                   DOC="\n\t\t/// ".join(ep.documentation)))
 
     imports = map(lambda x: f"using {x};\n", imports)
-    function_file_name = os.path.abspath(f"{output_path}/{class_name}Function.generated.cs")
+    function_file_name = os.path.abspath(f"{output_path}/{class_name}Functions.generated.cs")
     print(f"Writing Function to {function_file_name}")
     with open(function_file_name, "w", encoding="utf-8") as f:
         f.write(class_template.format(METHODS="\n\n".join(methods), NAMESPACE=namespace, CLASSNAME=class_name,

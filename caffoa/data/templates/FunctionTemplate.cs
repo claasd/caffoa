@@ -11,12 +11,12 @@ namespace {NAMESPACE}
 {{
     /// AUTO GENERATED CLASS
     /// implement a partial class that implements
-    /// public static partial I{CLASSNAME}Service Service(ILogger log);
+    /// public static I{CLASSNAME}Service Service(ILogger log);
     public static partial class {CLASSNAME}Functions
     {{
 
         // implement this in a partial class
-        // private static partial I{CLASSNAME}Service Service(HttpRequestMessage req, ILogger log);
+        // private static I{CLASSNAME}Service Service(HttpRequestMessage req, ILogger log);
 
 {METHODS}
     }}

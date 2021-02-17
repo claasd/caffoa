@@ -35,7 +35,8 @@ def write_model(model: ModelData, output_path: str, namespace: str):
 
         description = ""
         if property.description != None:
-            description = f"/// <summary>\n\t\t/// {property.description}\n\t\t/// </summary>\n\t\t"
+            prop_description = property.description.strip().replace("\n", "\n\t\t/// ")
+            description = f"/// <summary>\n\t\t/// {prop_description}\n\t\t/// </summary>\n\t\t"
 
         enums = ""
         if property.enums != None:
@@ -49,7 +50,8 @@ def write_model(model: ModelData, output_path: str, namespace: str):
     print(f"Writing class {model.name} -> {file_name}")
     description = "/// AUTOGENERED BY caffoa ///\n\t"
     if model.description != None:
-        description += f"/// <summary>\n\t/// {model.description}\n\t/// </summary>\n\t"
+        mod_description = model.description.strip().replace("\n","\n\t/// ")
+        description += f"/// <summary>\n\t/// {mod_description}\n\t/// </summary>\n\t"
     with open(file_name, "w", encoding="utf-8") as f:
         f.write(model_Template.format(NAMESPACE=namespace, NAME=model.name, PROPERTIES="\n\n".join(properties),
                                       IMPORTS=imports, PARENTS=parents, DESCRIPTION=description))

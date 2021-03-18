@@ -49,12 +49,12 @@ def create_function_files(endpoints: List[EndPoint], output_path: str, class_nam
         params_with_names = list()
         params_with_names_for_interface = list()
         param_names = list()
-        excpetion_params = list()
+        additioanl_error_infos = list()
         for param in ep.parameters:
             params_with_names.append(f"{param.type} {param.name}")
             params_with_names_for_interface.append(f"{param.type} {param.name}")
             param_names.append(param.name)
-            excpetion_params.append(f'wrappedException.Data["p_{param.name}"] = {param.name};\n\t\t\t\t')
+            additioanl_error_infos.append(f'debugInformation["p_{param.name}"] = {param.name};\n\t\t\t\t')
         if ep.needs_content:
             param_names.append("req.Content")
             params_with_names_for_interface.append("HttpContent contentPayload")
@@ -64,7 +64,7 @@ def create_function_files(endpoints: List[EndPoint], output_path: str, class_nam
         methods.append(
             method_template.format(NAME=ep.name, OPERATION=ep.operation, PATH=ep.path, PARAMS=params_for_function,
                                    PARAM_NAMES=param_name_str, START_BOILERPLATE=boilerplate[0],
-                                   EXCEPTION_PARAMS="".join(excpetion_params),
+                                   ADDITIONAL_ERROR_INFOS="".join(additioanl_error_infos),
                                    END_BOILERPLATE=boilerplate[1]))
         interface_methods.append(interface_method_template.format(NAME=ep.name, OPERATION=ep.operation, PATH=ep.path,
                                                                   PARAMS=params_for_interface,
@@ -112,7 +112,7 @@ def generate_functions(input_file: str, output_path: str, class_name: Union[str,
             if "operationId" not in config:
                 raise Warning(f"OperationId is missing for {path}: {operation}")
             operation_id = to_camelcase(config['operationId']) + "Async"
-            documentation = [config['description']]
+            documentation = config['description'].split("\n")
             for response, response_data in config["responses"].items():
                 documentation.append(f"{response} -> {response_data['description']}")
             parameters = base_parameters.copy()

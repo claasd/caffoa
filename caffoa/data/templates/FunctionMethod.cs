@@ -9,11 +9,16 @@
             try {{
                 {START_BOILERPLATE}return await Service(req, log).{NAME}({PARAM_NAMES});{END_BOILERPLATE}
             }} catch (Exception e) {{
-                var wrappedException =
-			        new Exception($"Internal server error in Function '{NAME}': {{e.Message}}", e);
-		        wrappedException.Data["FunctionName"] = "{NAME}";
-		        wrappedException.Data["Route"] = "{PATH}";
-		        wrappedException.Data["Operation"] = "{OPERATION}";
-		        {EXCEPTION_PARAMS}throw wrappedException;
+                var debugInformation = new Dictionary<string,  string>();
+                debugInformation["Error"] = e.Message;
+                debugInformation["ExecptionType"] = e.GetType().Name;
+                debugInformation[""] = e.Message;
+                debugInformation["FunctionName"] = "{NAME}";
+		        debugInformation["Route"] = "{PATH}";
+		        debugInformation["Operation"] = "{OPERATION}";
+		        debugInformation["Payload"] = await GetPayloadForExceptionLogging(req);
+		        {ADDITIONAL_ERROR_INFOS}
+		        log.LogCritical(JsonConvert.SerializeObject(debugInformation));
+		        throw;
             }}
         }}

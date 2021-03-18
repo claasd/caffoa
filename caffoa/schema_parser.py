@@ -136,6 +136,9 @@ class SchemaParser:
         if "$ref" not in anyof:
             raise Warning(f"anyOf child other than $ref not supported for '{name}' in '{class_name}'")
         data["$ref"] = anyof["$ref"]
+        typename = self.class_name_from_ref(data["$ref"])
+        if typename in self.known_types:
+            data = self.known_types[typename]
         return data
 
     def handle_ref(self, data: dict, nullable: bool) -> Tuple[str, str]:
@@ -226,9 +229,8 @@ class SchemaParser:
         names = list()
         lines = list()
         for value in enum:
-            varname = name + "_" +value
+            varname = to_camelcase(name) +to_camelcase(value) + "Value"
             varname = re.sub(r"[^A-Za-z0-9]+", '_', varname)
-            varname = varname.upper()
             names.append(varname)
             if typename == "string":
                 value = f'"{value}"'
@@ -236,7 +238,7 @@ class SchemaParser:
             lines.append(line)
 
 
-        listname = name.upper() + "_ALLOWED_VALUES"
+        listname = "AllowedValuesFor" + to_camelcase(name)
         values = ", ".join(names)
         line = f"public static readonly ImmutableArray<{typename}> {listname} = new ImmutableArray<{typename}>() {{ {values} }};"
         lines.append(line)

@@ -12,7 +12,6 @@
                 var debugInformation = new Dictionary<string,  string>();
                 debugInformation["Error"] = e.Message;
                 debugInformation["ExecptionType"] = e.GetType().Name;
-                debugInformation[""] = e.Message;
                 debugInformation["FunctionName"] = "{NAME}";
 		        debugInformation["Route"] = "{PATH}";
 		        debugInformation["Operation"] = "{OPERATION}";

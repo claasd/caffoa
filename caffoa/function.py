@@ -54,7 +54,7 @@ def create_function_files(endpoints: List[EndPoint], output_path: str, class_nam
             params_with_names.append(f"{param.type} {param.name}")
             params_with_names_for_interface.append(f"{param.type} {param.name}")
             param_names.append(param.name)
-            additioanl_error_infos.append(f'debugInformation["p_{param.name}"] = {param.name};\n\t\t\t\t')
+            additioanl_error_infos.append(f'debugInformation["p_{param.name}"] = {param.name}.ToString();\n\t\t\t\t')
         if ep.needs_content:
             param_names.append("req.Content")
             params_with_names_for_interface.append("HttpContent contentPayload")

@@ -33,6 +33,8 @@ def parse_type(schema: dict, nullable: bool = False) -> str:
         return f"System.Guid{suffix}"
     if type == "string" and format in ["date-time", "date"]:
         return f"System.DateTime{suffix}"
+    if type == "integer" and format == "int64":
+        return f"long{suffix}"
     if type == "integer":
         return f"int{suffix}"
     if type == "number":

@@ -80,6 +80,7 @@ class SchemaParser:
 
                 enums = None
                 isdate = False
+                required = name in required_props
                 nullable = "nullable" in data and data["nullable"]
 
                 # handle nullable references that are constructed with anyOf
@@ -91,7 +92,8 @@ class SchemaParser:
                     description = data["description"]
 
                 if "$ref" in data:
-                    typename, default_value = self.handle_ref(data, nullable)
+                    typename, default_value = self.handle_ref(data, required)
+                    nullable = not required
 
                 elif "type" not in data:
                     print(data)
@@ -141,10 +143,10 @@ class SchemaParser:
             data = self.known_types[typename]
         return data
 
-    def handle_ref(self, data: dict, nullable: bool) -> Tuple[str, str]:
+    def handle_ref(self, data: dict, required: bool) -> Tuple[str, str]:
         typename = self.class_name_from_ref(data["$ref"])
 
-        if not nullable:
+        if required:
             default_value = f"new {typename}()"
         else:
             default_value = "null"
@@ -174,7 +176,6 @@ class SchemaParser:
         return typename, default_value
 
     def handle_default_type(self, data: dict, nullable: bool) -> Tuple[str, str]:
-        typename = parse_type(data, nullable)
         default_value = None
         if "default" in data:
             default_value = data["default"]
@@ -186,6 +187,7 @@ class SchemaParser:
                 default_value = "null"
         elif nullable:
             default_value = "null"
+        typename = parse_type(data, nullable and default_value == "null")
         return typename, default_value
 
     @staticmethod

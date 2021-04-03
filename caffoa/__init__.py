@@ -24,16 +24,23 @@ def execute():
             function = config["function"]
             if not "name" in function or not "namespace" in function or not "targetFolder" in function:
                 raise Warning(f"function needs children 'name', 'namespace' and 'targetFolder' in service #{id}")
+            name = function['name']
+            namespace = function["namespace"]
+            target_folder = function['targetFolder']
             boilerplate = function.get('boilerplate')
+            interface_name = function.get('interfaceName', f"I{name}Service")
+            functions_name = function.get('functionsName', f"{name}Functions")
+            interface_namespace = function.get('interfaceNamespace', namespace)
+            interface_target_folder = function.get('interfaceTargetFolder', namespace)
             imports = function.get('imports', list())
-            generate_functions(api,function['targetFolder'], function['name'], function["namespace"], boilerplate, imports)
+            generate_functions(api, target_folder, functions_name, namespace, interface_target_folder, interface_name,
+                               interface_namespace, boilerplate, imports)
 
         if "model" in config:
             model = config["model"]
-            prefix = model.get("prefix","")
+            prefix = model.get("prefix", "")
             suffix = model.get("suffix", "")
-            if  not "namespace" in model or not "targetFolder" in model:
+            if not "namespace" in model or not "targetFolder" in model:
                 raise Warning(f"model needs children 'namespace' and 'targetFolder' in service #{id}")
             excludes = list(model.get('excludes', list()))
             generate_schemas(api, model["targetFolder"], model['namespace'], prefix, suffix, excludes)
-

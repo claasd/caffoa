@@ -26,8 +26,9 @@ class Parameter:
         self.name = name
 
 
-def create_function_files(endpoints: List[EndPoint], output_path: str, class_name: str,
-                          namespace: str, boilerplate: Optional[str], imports: List[str]):
+def create_function_files(endpoints: List[EndPoint], output_path: str, functions_name: str, namespace: str,
+                          interface_target_folder: str, interface_name: str, interface_namespace: str,
+                          boilerplate: Optional[str], imports: List[str]):
     if boilerplate != None:
         boilerplate = boilerplate.replace("\n", "\n\t\t\t\t")
         boilerplate = boilerplate.split("{BASE}")
@@ -71,18 +72,19 @@ def create_function_files(endpoints: List[EndPoint], output_path: str, class_nam
                                                                   DOC="\n\t\t/// ".join(ep.documentation)))
 
     imports = map(lambda x: f"using {x};\n", imports)
-    function_file_name = os.path.abspath(f"{output_path}/{class_name}Functions.generated.cs")
+    function_file_name = os.path.abspath(f"{output_path}/{functions_name}.generated.cs")
     print(f"Writing Function to {function_file_name}")
     with open(function_file_name, "w", encoding="utf-8") as f:
-        f.write(class_template.format(METHODS="\n\n".join(methods), NAMESPACE=namespace, CLASSNAME=class_name,
+        f.write(class_template.format(METHODS="\n\n".join(methods), NAMESPACE=namespace, CLASSNAME=functions_name,
+                                      INTERFACENAME=interface_name,
                                       IMPORTS="".join(imports)))
-    interface_file_name = os.path.abspath(f"{output_path}/I{class_name}Service.generated.cs")
+    interface_file_name = os.path.abspath(f"{interface_target_folder}/{interface_name}.generated.cs")
 
     print(f"Writing Interface to {interface_file_name}")
     with open(interface_file_name, "w", encoding="utf-8") as f:
 
-        f.write(interface_template.format(METHODS="\n\n".join(interface_methods), NAMESPACE=namespace,
-                                          CLASSNAME=class_name))
+        f.write(interface_template.format(METHODS="\n\n".join(interface_methods), NAMESPACE=interface_namespace,
+                                          CLASSNAME=interface_name))
 
 
 def parse_params(params: list) -> list:
@@ -94,12 +96,14 @@ def parse_params(params: list) -> list:
 
 
 def generate_functions(input_file: str, output_path: str, class_name: Union[str, None], namespace: str,
+                       interface_target_folder: str, interface_name: str, interface_namespace: str,
                        boilerplate: Optional[str], imports: List[str]):
     if class_name is None:
         class_name = namespace
     parser = ResolvingParser(input_file, strict=False)
     endpoints = list()
     os.makedirs(output_path, exist_ok=True)
+    os.makedirs(interface_target_folder, exist_ok=True)
     for path, options in parser.specification['paths'].items():
         path = str(path).strip('/')
         base_parameters = list()
@@ -121,4 +125,6 @@ def generate_functions(input_file: str, output_path: str, class_name: Union[str,
             needs_content = "requestBody" in config
             endpoints.append(EndPoint(operation_id, path, operation, parameters, documentation, needs_content))
 
-    create_function_files(endpoints, output_path, class_name, namespace, boilerplate, imports)
+    create_function_files(endpoints, output_path, class_name, namespace,
+                          interface_target_folder, interface_name, interface_namespace,
+                          boilerplate, imports)

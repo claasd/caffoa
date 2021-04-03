@@ -13,8 +13,8 @@ namespace {NAMESPACE}
 {{
     /// AUTO GENERATED CLASS
     /// implement a partial class that implements
-    /// public static I{CLASSNAME}Service Service(ILogger log);
-    public static partial class {CLASSNAME}Functions
+    /// public static {INTERFACENAME} Service(HttpRequestMessage req, ILogger log);
+    public static partial class {CLASSNAME}
     {{
 {METHODS}
         private static async Task<string> GetPayloadForExceptionLogging(HttpRequestMessage req)

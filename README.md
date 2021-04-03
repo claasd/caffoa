@@ -21,35 +21,15 @@ services:
       name: MyClassName
       namespace: MyNamespace
       targetFolder: ./output
-
-      ## you can add boilerplate code to each invocation. Make sure to put {CODE}
-      ## in the boilerplate at the position where the generated invocation should be placed
-      #boilerplate: |
-      #  try {
-      #      {CODE}
-      #  catch(SomethingNotFoundException e) {
-      #    return new HttpResponseMessage(HttpStatusCode.NotFound)
-      #    {
-      #        Content = new StringContent(err.Message)
-      #    };
-      #  }
-
-      ## if you need specific imports for your boilerpalte, add them here:
-      #imports:
-      #  - MyNamespace.Exceptions.SomethingNotFoundException
     model:
       namespace: MyNamespace.Model
       targetFolder: ./output/Model
-      #prefix: Base # you can add an optional prefix to your model classes
-      #suffix: Object # you can add an optional suffix to your model classes
-      #excludes:
-      # - objectToExclude
 ```
 You can add multiple services. Also, you can omit either `model` or `function` if you do not need one of them.
 Then, call the tool: 
 
 ```bash
-python3 -m caffoa --input path_to_config.yml
+python3 -m caffoa --config path_to_config.yml
 ```
 
 ## Create Azure Function template:
@@ -74,4 +54,43 @@ The file will contain a shared class, with all properties of the schema. You can
 * The schema must be defined in the components section.
 * Furthermore, schemas may not be nested without reference.
 (You can easily overcome this restriction by defining more schemas in the components section and have them reference each other.)
-* allOf is implemented as inheritance
+* allOf is implemented as inheritance, and therefore can only handle allOf with one reference and one direct configuration
+
+## Advanced configuration options
+There are multiple optional configuration options that you can use:
+```yaml
+services:
+  - apiPath: userservice.openapi.yml
+    function:
+      name: MyClassName
+      namespace: MyNamespace
+      targetFolder: ./output
+      functionsName: MyFunctions # name of the functions class. defaults to {name}Functions 
+      interfaceName: IMyInterface # name of the interface class. defaults to I{name}Service. 
+      interfaceNamespace: MyInterfaceNamespace # defaults to 'namespace'. If given, the interface uses this namespace
+      interfaceTargetFolder: ./output/shared # defaults to 'targetFolder'. If given, the interface is written to this folder
+
+      ## you can add boilerplate code to each invocation. Make sure to put {CODE}
+      ## in the boilerplate at the position where the generated invocation should be placed
+      boilerplate: |
+        try {
+            {CODE}
+        catch(SomethingNotFoundException e) {
+          return new HttpResponseMessage(HttpStatusCode.NotFound)
+          {
+              Content = new StringContent(err.Message)
+          };
+        }
+
+      ## if you need specific imports for your boilerplate, add them here:
+      imports:
+        - MyNamespace.Exceptions.SomethingNotFoundException
+    model:
+      namespace: MyNamespace.Model
+      targetFolder: ./output/Model
+      prefix: Base # you can add an optional prefix to your model classes
+      suffix: Object # you can add an optional suffix to your model classes
+      # you can exclude objects from generation:
+      excludes:
+       - objectToExclude
+```

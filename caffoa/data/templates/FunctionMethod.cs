@@ -7,7 +7,7 @@
             HttpRequestMessage req{PARAMS}, ILogger log)
         {{
             try {{
-                {START_BOILERPLATE}return await Service(req, log).{NAME}({PARAM_NAMES});{END_BOILERPLATE}
+                {INVOCATION}
             }} catch (Exception e) {{
                 var debugInformation = new Dictionary<string,  string>();
                 debugInformation["Error"] = e.Message;

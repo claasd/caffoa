@@ -70,8 +70,10 @@ services:
       interfaceNamespace: MyInterfaceNamespace # defaults to 'namespace'. If given, the interface uses this namespace
       interfaceTargetFolder: ./output/shared # defaults to 'targetFolder'. If given, the interface is written to this folder
 
-      ## you can add boilerplate code to each invocation. Make sure to put {CODE}
-      ## in the boilerplate at the position where the generated invocation should be placed
+      ## you can add boilerplate code to each invocation. 
+      ## you can add placeholders: {BASE} for the full invocation code, or {CALL} for just the function call.
+      ## {BASE} will be replaced with "return await Service(req, log).{CALL};"
+      ## {CALL} will be replaced with 'FunctionName(params)'
       boilerplate: |
         try {
             {CODE}

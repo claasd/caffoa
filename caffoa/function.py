@@ -29,12 +29,8 @@ class Parameter:
 def create_function_files(endpoints: List[EndPoint], output_path: str, functions_name: str, namespace: str,
                           interface_target_folder: str, interface_name: str, interface_namespace: str,
                           boilerplate: Optional[str], imports: List[str]):
-    if boilerplate != None:
-        boilerplate = boilerplate.replace("\n", "\n\t\t\t\t")
-        boilerplate = boilerplate.split("{BASE}")
-        assert len(boilerplate) == 2
-    else:
-        boilerplate = ('', '')
+    if boilerplate is None:
+        boilerplate = "{BASE}"
 
     with open(TEMPLATE_FOLDER + "/FunctionMethod.cs", "r", encoding="utf-8") as f:
         method_template = f.read()
@@ -62,11 +58,13 @@ def create_function_files(endpoints: List[EndPoint], output_path: str, functions
         params_for_interface = ", ".join(params_with_names_for_interface)
         params_for_function = ", " + ", ".join(params_with_names) if len(params_with_names) > 0 else ""
         param_name_str = ", ".join(param_names)
+        function_call = f"{ep.name}({param_name_str})"
+        default_call = f"return await Service(req, log).{function_call};"
+        invocation = boilerplate.replace("{BASE}",default_call).replace("{CALL}", function_call).replace("\n","\n\t\t\t\t").strip()
         methods.append(
-            method_template.format(NAME=ep.name, OPERATION=ep.operation, PATH=ep.path, PARAMS=params_for_function,
-                                   PARAM_NAMES=param_name_str, START_BOILERPLATE=boilerplate[0],
-                                   ADDITIONAL_ERROR_INFOS="".join(additioanl_error_infos),
-                                   END_BOILERPLATE=boilerplate[1]))
+            method_template.format(NAME=ep.name, OPERATION=ep.operation, PATH=ep.path, INVOCATION=invocation, PARAMS=params_for_function,
+                                   PARAM_NAMES=param_name_str, ADDITIONAL_ERROR_INFOS="".join(additioanl_error_infos)))
+
         interface_methods.append(interface_method_template.format(NAME=ep.name, OPERATION=ep.operation, PATH=ep.path,
                                                                   PARAMS=params_for_interface,
                                                                   DOC="\n\t\t/// ".join(ep.documentation)))

@@ -76,7 +76,7 @@ services:
       ## {CALL} will be replaced with 'FunctionName(params)'
       boilerplate: |
         try {
-            {CODE}
+            {BASE}
         catch(SomethingNotFoundException e) {
           return new HttpResponseMessage(HttpStatusCode.NotFound)
           {

@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 namespace {NAMESPACE} {{
     {DESCRIPTION}[JsonObject(MemberSerialization.OptIn)]
     public partial class {NAME}{PARENTS} {{
-        public const string JsonObjectName = "{RAWNAME}";
+        public const string {NAME}ObjectName = "{RAWNAME}";
 {PROPERTIES}
     }}
 }}

@@ -1,23 +1,9 @@
 services:
-  - apiPath: D:\data\btc\buntspecht\UserManagement\apis\b2b_beenera.openapi.yml
-    function:
-      name: MyClass
-      namespace: MyNamespace
-      targetFolder: ./output
-      boilerplate: |
-        try {
-            {BASE}
-        } catch(RestResponseError err) {
-            return err.ToResponseMessage();
-        }
-      imports:
-        - DataBackend.Common.Rest
+  - apiPath: tests\openapi.yml
 
     model:
       namespace: My.Model
       targetFolder: ./output/Model
       prefix: Base
       suffix: ""
-      excludes:
-        - user
 

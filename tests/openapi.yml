@@ -1,0 +1,53 @@
+openapi: "3.0.2"
+info:
+  title: Demo API
+  version: "1.0"
+
+
+components:
+
+  schemas:
+    error:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Single string based code describing the error.
+        message:
+          type: string
+          description: Human readable error message.
+      required:
+        - status
+        - message
+
+    address:
+      type: object
+      properties:
+        street:
+          type: string
+        postalCode:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        flags:
+          type: object
+          additionalProperties:
+            type: string
+      required:
+        - street
+        - postalCode
+        - city
+        - country
+
+paths:
+  "/user":
+    get:
+      tags:
+        - user
+      operationId: user-get
+      description: get information about the user
+      responses:
+        "200":
+          description: return user object

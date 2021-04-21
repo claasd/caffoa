@@ -53,7 +53,7 @@ def write_model(model: ModelData, output_path: str, namespace: str):
         mod_description = model.description.strip().replace("\n","\n\t/// ")
         description += f"/// <summary>\n\t/// {mod_description}\n\t/// </summary>\n\t"
     with open(file_name, "w", encoding="utf-8") as f:
-        f.write(model_Template.format(NAMESPACE=namespace, NAME=model.name, PROPERTIES="\n\n".join(properties),
+        f.write(model_Template.format(NAMESPACE=namespace, NAME=model.name, RAWNAME=model.rawname, PROPERTIES="\n\n".join(properties),
                                       IMPORTS=imports, PARENTS=parents, DESCRIPTION=description))
     if has_dates:
         with open(TEMPLATE_FOLDER + "/DateSerializer.cs", "r", encoding="utf-8") as f:

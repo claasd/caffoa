@@ -20,8 +20,9 @@ class MemberData:
 
 
 class ModelData:
-    def __init__(self, name: str, parents: list, properties: List[MemberData], imports: Set[str],
+    def __init__(self, rawname: str, name: str, parents: list, properties: List[MemberData], imports: Set[str],
                  description: Optional[str]):
+        self.rawname = rawname
         self.name = name
         self.parents = parents
         self.properties = properties
@@ -128,7 +129,7 @@ class SchemaParser:
         if "description" in schema:
             description = schema["description"]
 
-        return ModelData(self.class_name(class_name), parents, members, imports, description)
+        return ModelData(class_name, self.class_name(class_name), parents, members, imports, description)
 
     def handle_any_of(self, data: dict, name: str, class_name: str):
         anyof = data["anyOf"]

@@ -30,8 +30,8 @@ def write_model(model: ModelData, output_path: str, namespace: str):
             json_property_extra = ", Required = Required.AllowNull"
         elif property.is_required:
             json_property_extra = ", Required = Required.Always"
-        elif not property.nullable:
-            json_property_extra = ", Required = Required.DisallowNull"
+#        elif not property.nullable:
+#            json_property_extra = ", Required = Required.DisallowNull"
 
         description = ""
         if property.description != None:

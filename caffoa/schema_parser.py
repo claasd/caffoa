@@ -162,8 +162,9 @@ class SchemaParser:
                 f"Cannot parse array trees: '{name}' child of '{class_name}' should have it's array item declared in own schema directly under 'components'")
         else:
             typename = parse_type(items, nullable)
-        typename = f"List<{typename}>"
-        default_value = f"new {typename}()"
+        default_value = f"new List<{typename}>()"
+        typename = f"ICollection<{typename}>"
+
         return typename, default_value
 
     def handle_additional_properties(self, data: dict, nullable: bool) -> Tuple[str, str]:

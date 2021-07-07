@@ -35,6 +35,10 @@ def parse_type(schema: dict, nullable: bool = False) -> str:
         return f"System.DateTime{suffix}"
     if type == "integer" and format == "int64":
         return f"long{suffix}"
+    if type == "integer" and format == "uint64":
+        return f"ulong{suffix}"
+    if type == "integer" and format == "uint32":
+        return f"uint{suffix}"
     if type == "integer":
         return f"int{suffix}"
     if type == "number":

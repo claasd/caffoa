@@ -2,14 +2,15 @@ import logging
 import os
 
 from caffoa import DuplicationHandler
-from caffoa.converter import to_camelcase, TEMPLATE_FOLDER
+from caffoa.converter import to_camelcase
 from caffoa.schema_parser import SchemaParser, ModelData
 
 
-def write_model(model: ModelData, output_path: str, namespace: str):
-    with open(TEMPLATE_FOLDER + "/ModelTemplate.cs", "r", encoding="utf-8") as f:
-        model_Template = f.read()
-    with open(TEMPLATE_FOLDER + "/ModelPropertyTemplate.cs", "r", encoding="utf-8") as f:
+def write_model(model: ModelData, output_path: str, namespace: str, version: int):
+    template_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), f"data/v{version}")
+    with open(template_folder + "/ModelTemplate.cs", "r", encoding="utf-8") as f:
+        model_template = f.read()
+    with open(template_folder + "/ModelPropertyTemplate.cs", "r", encoding="utf-8") as f:
         prop_Template = f.read()
     properties = list()
     imports = "".join(model.imports)
@@ -32,8 +33,8 @@ def write_model(model: ModelData, output_path: str, namespace: str):
             json_property_extra = ", Required = Required.AllowNull"
         elif property.is_required:
             json_property_extra = ", Required = Required.Always"
-#        elif not property.nullable:
-#            json_property_extra = ", Required = Required.DisallowNull"
+        #        elif not property.nullable:
+        #            json_property_extra = ", Required = Required.DisallowNull"
 
         description = ""
         if property.description != None:
@@ -42,7 +43,7 @@ def write_model(model: ModelData, output_path: str, namespace: str):
 
         enums = ""
         if property.enums != None:
-            enums= f"{property.enums}\n\n\t\t"
+            enums = f"{property.enums}\n\n\t\t"
 
         properties.append(
             prop_Template.format(TYPE=property.type, NAMELOWER=property.name, NAMEUPPER=to_camelcase(property.name),
@@ -52,10 +53,11 @@ def write_model(model: ModelData, output_path: str, namespace: str):
     logging.info(f"Writing class {model.name} -> {file_name}")
     description = "/// AUTOGENERED BY caffoa ///\n\t"
     if model.description != None:
-        mod_description = model.description.strip().replace("\n","\n\t/// ")
+        mod_description = model.description.strip().replace("\n", "\n\t/// ")
         description += f"/// <summary>\n\t/// {mod_description}\n\t/// </summary>\n\t"
     with open(file_name, "w", encoding="utf-8") as f:
-        f.write(model_Template.format(NAMESPACE=namespace, NAME=model.name, RAWNAME=model.rawname, PROPERTIES="\n\n".join(properties),
+        f.write(model_template.format(NAMESPACE=namespace, NAME=model.name, RAWNAME=model.rawname,
+                                      PROPERTIES="\n\n".join(properties),
                                       IMPORTS=imports, PARENTS=parents, DESCRIPTION=description))
     if has_dates:
         with open(TEMPLATE_FOLDER + "/DateSerializer.cs", "r", encoding="utf-8") as f:
@@ -67,11 +69,12 @@ def write_model(model: ModelData, output_path: str, namespace: str):
             f.write(date_converter_template.format(NAMESPACE=namespace))
 
 
-def generate_schemas(input_file: str, output_path: str, namespace: str, prefix: str, suffix: str, excludes: list, duplication_handler: DuplicationHandler):
+def generate_schemas(input_file: str, output_path: str, namespace: str, prefix: str, suffix: str, excludes: list,
+                     duplication_handler: DuplicationHandler, version: int):
     parser = SchemaParser(prefix, suffix, excludes)
     models = parser.parse(input_file)
     os.makedirs(output_path, exist_ok=True)
     for model in models:
         if duplication_handler.should_generate(model.name):
-            write_model(model, output_path, namespace)
+            write_model(model, output_path, namespace, version)
             duplication_handler.store_generated(model.name)

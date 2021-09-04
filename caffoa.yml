@@ -1,5 +1,6 @@
 config:
   duplicates: once # once, overwrite (default)
+  version: 2 # 1 (old, partial classes, HttpResponseMessage) 2 : (new, Injection, IActionResult)
 services:
   - apiPath: tests\openapi.yml
 
@@ -8,7 +9,10 @@ services:
       targetFolder: ./output/Model
       prefix: Base
       suffix: ""
-
+    function:
+      targetFolder: output
+      namespace: Foo
+      name: Foo
   - apiPath: tests\openapi.yml
 
     model:

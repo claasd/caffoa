@@ -18,12 +18,13 @@ def execute():
     if type(services) != list:
         raise Warning("services should be list")
     try:
-        config = data["config"]
-        if type(config) != dict:
+        settings = data["config"]
+        if type(settings) != dict:
             raise Warning("config should be key/values pairs")
     except KeyError:
-        config = dict()
-    duplication_handler = DuplicationHandler(config.get("duplicates", "overwrite"))
+        settings = dict()
+    duplication_handler = DuplicationHandler(settings.get("duplicates", "overwrite"))
+    version = settings.get("version", 1)
     for id, config in enumerate(services):
         if not "apiPath" in config:
             raise Warning(f"apiPath is required for service #{id}")
@@ -39,10 +40,10 @@ def execute():
             interface_name = function.get('interfaceName', f"I{name}Service")
             functions_name = function.get('functionsName', f"{name}Functions")
             interface_namespace = function.get('interfaceNamespace', namespace)
-            interface_target_folder = function.get('interfaceTargetFolder', namespace)
+            interface_target_folder = function.get('interfaceTargetFolder', target_folder)
             imports = function.get('imports', list())
             generate_functions(api, target_folder, functions_name, namespace, interface_target_folder, interface_name,
-                               interface_namespace, boilerplate, imports)
+                               interface_namespace, boilerplate, imports, version)
 
         if "model" in config:
             model = config["model"]
@@ -51,4 +52,4 @@ def execute():
             if not "namespace" in model or not "targetFolder" in model:
                 raise Warning(f"model needs children 'namespace' and 'targetFolder' in service #{id}")
             excludes = list(model.get('excludes', list()))
-            generate_schemas(api, model["targetFolder"], model['namespace'], prefix, suffix, excludes, duplication_handler)
+            generate_schemas(api, model["targetFolder"], model['namespace'], prefix, suffix, excludes, duplication_handler, version)

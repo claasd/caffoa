@@ -1,8 +1,5 @@
 import os
 
-TEMPLATE_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data/templates")
-
-
 def capitalize_first(data: str) -> str:
     if len(data) > 1:
         return data[0].upper() + data[1:]

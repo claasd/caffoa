@@ -41,13 +41,50 @@ components:
         - city
         - country
 
+    user:
+      type: object
+      properties:
+        name:
+          type: string
+        address:
+          $ref: "#components/schemas/address"
+
 paths:
-  "/user":
+  "/users":
+    get:
+      tags:
+        - user
+      operationId: users-get
+      description: get information about the users
+      responses:
+        "200":
+          description: return user object
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/user"
+
+  "/users/{userId}":
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        description: Start of the slice.
+        schema:
+          type: string
+
     get:
       tags:
         - user
       operationId: user-get
-      description: get information about the user
+      description: get information about the users
       responses:
         "200":
           description: return user object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/user"
+

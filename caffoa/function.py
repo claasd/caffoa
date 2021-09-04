@@ -4,7 +4,7 @@ from typing import List, Union, Optional
 
 from prance import ResolvingParser
 
-from caffoa.converter import parse_type, to_camelcase, TEMPLATE_FOLDER
+from caffoa.converter import parse_type, to_camelcase
 
 
 class EndPoint:
@@ -29,17 +29,17 @@ class Parameter:
 
 def create_function_files(endpoints: List[EndPoint], output_path: str, functions_name: str, namespace: str,
                           interface_target_folder: str, interface_name: str, interface_namespace: str,
-                          boilerplate: Optional[str], imports: List[str]):
+                          boilerplate: Optional[str], imports: List[str], version: int):
     if boilerplate is None:
         boilerplate = "{BASE}"
-
-    with open(TEMPLATE_FOLDER + "/FunctionMethod.cs", "r", encoding="utf-8") as f:
+    template_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), f"data/v{version}")
+    with open(template_folder + "/FunctionMethod.cs", "r", encoding="utf-8") as f:
         method_template = f.read()
-    with open(TEMPLATE_FOLDER + "/FunctionTemplate.cs", "r", encoding="utf-8") as f:
+    with open(template_folder + "/FunctionTemplate.cs", "r", encoding="utf-8") as f:
         class_template = f.read()
-    with open(TEMPLATE_FOLDER + "/InterfaceMethod.cs", "r", encoding="utf-8") as f:
+    with open(template_folder + "/InterfaceMethod.cs", "r", encoding="utf-8") as f:
         interface_method_template = f.read()
-    with open(TEMPLATE_FOLDER + "/InterfaceTemplate.cs", "r", encoding="utf-8") as f:
+    with open(template_folder + "/InterfaceTemplate.cs", "r", encoding="utf-8") as f:
         interface_template = f.read()
     methods = list()
     interface_methods = list()
@@ -53,14 +53,20 @@ def create_function_files(endpoints: List[EndPoint], output_path: str, functions
             params_with_names_for_interface.append(f"{param.type} {param.name}")
             param_names.append(param.name)
             additioanl_error_infos.append(f'debugInformation["p_{param.name}"] = {param.name}.ToString();\n\t\t\t\t')
-        if ep.needs_content:
+        if ep.needs_content and version == 1:
             param_names.append("req.Content")
             params_with_names_for_interface.append("HttpContent contentPayload")
+        elif version == 2:
+            param_names.append("request")
+            params_with_names_for_interface.append("HttpRequest request")
         params_for_interface = ", ".join(params_with_names_for_interface)
         params_for_function = ", " + ", ".join(params_with_names) if len(params_with_names) > 0 else ""
         param_name_str = ", ".join(param_names)
         function_call = f"{ep.name}({param_name_str})"
-        default_call = f"return await Service(req, log).{function_call};"
+        if version == 1:
+            default_call = f"return await Service(req, log).{function_call};"
+        else:
+            default_call = f"return await _service.{function_call};"
         invocation = boilerplate.replace("{BASE}",default_call).replace("{CALL}", function_call).replace("\n","\n\t\t\t\t").strip()
         methods.append(
             method_template.format(NAME=ep.name, OPERATION=ep.operation, PATH=ep.path, INVOCATION=invocation, PARAMS=params_for_function,
@@ -96,7 +102,7 @@ def parse_params(params: list) -> list:
 
 def generate_functions(input_file: str, output_path: str, class_name: Union[str, None], namespace: str,
                        interface_target_folder: str, interface_name: str, interface_namespace: str,
-                       boilerplate: Optional[str], imports: List[str]):
+                       boilerplate: Optional[str], imports: List[str], version: int):
     if class_name is None:
         class_name = namespace
     parser = ResolvingParser(input_file, strict=False)
@@ -126,4 +132,4 @@ def generate_functions(input_file: str, output_path: str, class_name: Union[str,
 
     create_function_files(endpoints, output_path, class_name, namespace,
                           interface_target_folder, interface_name, interface_namespace,
-                          boilerplate, imports)
+                          boilerplate, imports, version)

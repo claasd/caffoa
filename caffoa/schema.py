@@ -1,5 +1,7 @@
+import logging
 import os
 
+from caffoa import DuplicationHandler
 from caffoa.converter import to_camelcase, TEMPLATE_FOLDER
 from caffoa.schema_parser import SchemaParser, ModelData
 
@@ -47,7 +49,7 @@ def write_model(model: ModelData, output_path: str, namespace: str):
                                  JSON_EXTRA=extra, DEFAULT=default_str, JSON_PROPERTY_EXTRA=json_property_extra,
                                  DESCRIPTION=description, ENUMS=enums))
     file_name = os.path.abspath(output_path + f"/{model.name}.generated.cs")
-    print(f"Writing class {model.name} -> {file_name}")
+    logging.info(f"Writing class {model.name} -> {file_name}")
     description = "/// AUTOGENERED BY caffoa ///\n\t"
     if model.description != None:
         mod_description = model.description.strip().replace("\n","\n\t/// ")
@@ -60,14 +62,16 @@ def write_model(model: ModelData, output_path: str, namespace: str):
             date_converter_template = f.read()
 
         file_name = os.path.abspath(output_path + f"/CustomJsonDateConverter.generated.cs")
-        print(f"Writing CustomJsonDateConverter -> {file_name}")
+        logging.info(f"Writing CustomJsonDateConverter -> {file_name}")
         with open(file_name, "w", encoding="utf-8") as f:
             f.write(date_converter_template.format(NAMESPACE=namespace))
 
 
-def generate_schemas(input_file: str, output_path: str, namespace: str, prefix: str, suffix: str, excludes: list):
+def generate_schemas(input_file: str, output_path: str, namespace: str, prefix: str, suffix: str, excludes: list, duplication_handler: DuplicationHandler):
     parser = SchemaParser(prefix, suffix, excludes)
     models = parser.parse(input_file)
     os.makedirs(output_path, exist_ok=True)
     for model in models:
-        write_model(model, output_path, namespace)
+        if duplication_handler.should_generate(model.name):
+            write_model(model, output_path, namespace)
+            duplication_handler.store_generated(model.name)

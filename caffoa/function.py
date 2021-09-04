@@ -1,3 +1,4 @@
+import logging
 import os
 from typing import List, Union, Optional
 
@@ -71,14 +72,14 @@ def create_function_files(endpoints: List[EndPoint], output_path: str, functions
 
     imports = map(lambda x: f"using {x};\n", imports)
     function_file_name = os.path.abspath(f"{output_path}/{functions_name}.generated.cs")
-    print(f"Writing Function to {function_file_name}")
+    logging.info(f"Writing Function to {function_file_name}")
     with open(function_file_name, "w", encoding="utf-8") as f:
         f.write(class_template.format(METHODS="\n\n".join(methods), NAMESPACE=namespace, CLASSNAME=functions_name,
                                       INTERFACENAME=interface_name,
                                       IMPORTS="".join(imports)))
     interface_file_name = os.path.abspath(f"{interface_target_folder}/{interface_name}.generated.cs")
 
-    print(f"Writing Interface to {interface_file_name}")
+    logging.info(f"Writing Interface to {interface_file_name}")
     with open(interface_file_name, "w", encoding="utf-8") as f:
 
         f.write(interface_template.format(METHODS="\n\n".join(interface_methods), NAMESPACE=interface_namespace,

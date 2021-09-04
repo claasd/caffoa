@@ -1,3 +1,4 @@
+import logging
 from typing import Tuple, Optional, List, Set
 import re
 
@@ -97,7 +98,6 @@ class SchemaParser:
                     nullable = not required
 
                 elif "type" not in data:
-                    print(data)
                     raise Warning(f"Cannot parse property without type for '{name}' in '{class_name}'")
 
                 elif data["type"] == "array":
@@ -216,7 +216,7 @@ class SchemaParser:
                         "allOf is implemented as inheritance; cannot have to children of allOf with direct implementation")
                 to_generate = element
         if to_generate is None:
-            print("WARNING: Creating class without content, no child of allOf is type object")
+            logging.warning("Creating class without content, no child of allOf is type object")
             to_generate = dict()
         return self.parse_objects(class_name, to_generate, parents)
 

@@ -1,6 +1,7 @@
 import argparse
 import yaml
 
+from caffoa.duplication_handler import DuplicationHandler
 from caffoa.function import generate_functions
 from caffoa.schema import generate_schemas
 
@@ -16,6 +17,13 @@ def execute():
     services = data["services"]
     if type(services) != list:
         raise Warning("services should be list")
+    try:
+        config = data["config"]
+        if type(config) != dict:
+            raise Warning("config should be key/values pairs")
+    except KeyError:
+        config = dict()
+    duplication_handler = DuplicationHandler(config.get("duplicates", "overwrite"))
     for id, config in enumerate(services):
         if not "apiPath" in config:
             raise Warning(f"apiPath is required for service #{id}")
@@ -43,4 +51,4 @@ def execute():
             if not "namespace" in model or not "targetFolder" in model:
                 raise Warning(f"model needs children 'namespace' and 'targetFolder' in service #{id}")
             excludes = list(model.get('excludes', list()))
-            generate_schemas(api, model["targetFolder"], model['namespace'], prefix, suffix, excludes)
+            generate_schemas(api, model["targetFolder"], model['namespace'], prefix, suffix, excludes, duplication_handler)

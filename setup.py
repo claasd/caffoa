@@ -8,7 +8,7 @@ setup(
     version='0.22.0',
     packages=['caffoa'],
     package_data={
-        'caffoa': ['./data/v1/*'],
+        'caffoa': ['./data/v1/*', './data/v2/*'],
     },
     include_package_data=True,
     url='https://github.com/claasd/caffoa',

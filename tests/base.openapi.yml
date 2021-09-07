@@ -20,13 +20,34 @@ components:
         - status
         - message
 
+    address:
+      type: object
+      properties:
+        street:
+          type: string
+        postalCode:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        flags:
+          type: object
+          additionalProperties:
+            type: string
+      required:
+        - street
+        - postalCode
+        - city
+        - country
+
     user:
       type: object
       properties:
         name:
           type: string
         address:
-          $ref: "base.openapi.yml#/components/schemas/address"
+          $ref: "#components/schemas/address"
 
 paths:
   "/users":

@@ -2,7 +2,8 @@ import logging
 from typing import Tuple, Optional, List, Set
 import re
 
-from prance import BaseParser
+from prance import ResolvingParser
+from prance.util.resolver import RESOLVE_HTTP, RESOLVE_FILES, TRANSLATE_EXTERNAL
 
 from caffoa.converter import parse_type, to_camelcase
 
@@ -39,9 +40,13 @@ class SchemaParser:
         self.excludes = excludes
 
     def parse(self, input_file: str) -> List[ModelData]:
-        parser = BaseParser(input_file, strict=False)
+        parser = ResolvingParser(input_file, strict=False, resolve_types=RESOLVE_HTTP | RESOLVE_FILES,
+                                 resolve_method=TRANSLATE_EXTERNAL)
         schemas = parser.specification["components"]["schemas"]
         for class_name, schema in schemas.items():
+            if ".yml_schemas_" in class_name:
+                class_name = class_name.split(".yml_schemas_")[-1]
+            print(class_name, schema)
             if class_name in self.excludes:
                 continue
             self.parse_simple(class_name, schema)
@@ -106,6 +111,7 @@ class SchemaParser:
 
                 elif data["type"] == "object":
                     if "properties" in data:
+                        print(name, data)
                         raise Warning(
                             f"Cannot parse property trees: '{name}' child of '{class_name}' should be declared in own schema directly under 'components'")
                     if "additionalProperties" in data:
@@ -233,14 +239,13 @@ class SchemaParser:
         names = list()
         lines = list()
         for value in enum:
-            varname = to_camelcase(name) +to_camelcase(value) + "Value"
+            varname = to_camelcase(name) + to_camelcase(value) + "Value"
             varname = re.sub(r"[^A-Za-z0-9]+", '_', varname)
             names.append(varname)
             if typename == "string":
                 value = f'"{value}"'
             line = f"public const {typename} {varname} = {value};"
             lines.append(line)
-
 
         listname = "AllowedValuesFor" + to_camelcase(name)
         values = ", ".join(names)

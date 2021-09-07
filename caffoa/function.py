@@ -3,7 +3,6 @@ import os
 from typing import List, Union, Optional
 
 from prance import ResolvingParser
-
 from caffoa.converter import parse_type, to_camelcase
 
 

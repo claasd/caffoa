@@ -33,11 +33,12 @@ class ModelData:
 
 
 class SchemaParser:
-    def __init__(self, prefix: str, suffix: str, excludes: list):
+    def __init__(self, prefix: str, suffix: str, excludes: list, includes: list):
         self.prefix = prefix
         self.suffix = suffix
         self.known_types = dict()
         self.excludes = excludes
+        self.includes = includes
 
     def parse(self, input_file: str) -> List[ModelData]:
         parser = ResolvingParser(input_file, strict=False, resolve_types=RESOLVE_HTTP | RESOLVE_FILES,
@@ -46,16 +47,21 @@ class SchemaParser:
         for class_name, schema in schemas.items():
             if ".yml_schemas_" in class_name:
                 class_name = class_name.split(".yml_schemas_")[-1]
-            print(class_name, schema)
             if class_name in self.excludes:
+                continue
+            if len(self.includes) > 0 and class_name not in self.includes:
                 continue
             self.parse_simple(class_name, schema)
 
         objects = list()
         for class_name, schema in schemas.items():
+            if ".yml_schemas_" in class_name:
+                class_name = class_name.split(".yml_schemas_")[-1]
             if self.class_name(class_name) in self.known_types:
                 continue
             if class_name in self.excludes:
+                continue
+            if len(self.includes) > 0 and class_name not in self.includes:
                 continue
             objects.append(self.parse_objects(class_name, schema))
         return objects

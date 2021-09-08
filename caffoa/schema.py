@@ -70,8 +70,8 @@ def write_model(model: ModelData, output_path: str, namespace: str, version: int
 
 
 def generate_schemas(input_file: str, output_path: str, namespace: str, prefix: str, suffix: str, excludes: list,
-                     duplication_handler: DuplicationHandler, version: int):
-    parser = SchemaParser(prefix, suffix, excludes)
+                     includes: list, duplication_handler: DuplicationHandler, version: int):
+    parser = SchemaParser(prefix, suffix, excludes, includes)
     models = parser.parse(input_file)
     os.makedirs(output_path, exist_ok=True)
     for model in models:

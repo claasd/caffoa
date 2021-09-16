@@ -1,12 +1,12 @@
 import argparse
 import yaml
 
-from caffoa.duplication_handler import DuplicationHandler
+import caffoa.duplication_handler
 from caffoa.function import generate_functions
-from caffoa.schema import generate_schemas
+from caffoa.openapi_file import OpenApiFile
 
 
-def execute():
+def execute2():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="caffoa.yml", help="Path to config file (Default: caffoa.yml)")
     args = parser.parse_args()
@@ -23,12 +23,15 @@ def execute():
             raise Warning("config should be key/values pairs")
     except KeyError:
         settings = dict()
-    duplication_handler = DuplicationHandler(settings.get("duplicates", "overwrite"))
+    duplication_handler.init(settings.get("duplicates", "overwrite"))
     version = settings.get("version", 1)
-    for id, config in enumerate(services):
+    for number, config in enumerate(services):
         if not "apiPath" in config:
-            raise Warning(f"apiPath is required for service #{id}")
-        api = config["apiPath"]
+            raise Warning(f"apiPath is required for service #{number}")
+        handler = OpenApiFile(config["apiPath"], version)
+        if "model" in config:
+            handler.create_model(config["model"])
+
         if "function" in config:
             function = config["function"]
             if not "name" in function or not "namespace" in function or not "targetFolder" in function:
@@ -42,16 +45,5 @@ def execute():
             interface_namespace = function.get('interfaceNamespace', namespace)
             interface_target_folder = function.get('interfaceTargetFolder', target_folder)
             imports = function.get('imports', list())
-            generate_functions(api, target_folder, functions_name, namespace, interface_target_folder, interface_name,
-                               interface_namespace, boilerplate, imports, version)
-
-        if "model" in config:
-            model = config["model"]
-            prefix = model.get("prefix", "")
-            suffix = model.get("suffix", "")
-            imports = model.get("imports", list())
-            if not "namespace" in model or not "targetFolder" in model:
-                raise Warning(f"model needs children 'namespace' and 'targetFolder' in service #{id}")
-            excludes = list(model.get('excludes', list()))
-            includes = list(model.get('includes', list()))
-            generate_schemas(api, model["targetFolder"], model['namespace'], prefix, suffix, excludes, includes, duplication_handler, version, imports)
+            generate_functions(config["apiPath"], target_folder, functions_name, namespace, interface_target_folder,
+                               interface_name, interface_namespace, boilerplate, imports, version)

@@ -9,6 +9,8 @@ services:
       targetFolder: ./output/Model
       prefix: Base
       suffix: ""
+      imports:
+        - SomeStuff
 
 
     function:
@@ -22,4 +24,5 @@ services:
       targetFolder: ./output/Model
       prefix: Base
       suffix: ""
+
 

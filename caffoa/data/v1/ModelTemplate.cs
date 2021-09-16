@@ -13,7 +13,7 @@ namespace {NAMESPACE} {{
         }}
 
         public void UpdateWith{NAME}({NAME} other) {{
-            {BASE_UPDATEPROPS}{UPDATEPROPS}
+            {UPDATEPROPS}
         }}
     }}
 }}

@@ -1,5 +1,6 @@
 import os
 
+
 def capitalize_first(data: str) -> str:
     if len(data) > 1:
         return data[0].upper() + data[1:]
@@ -43,5 +44,5 @@ def parse_type(schema: dict, nullable: bool = False) -> str:
     if type == "boolean":
         return f"bool{suffix}"
     if type == "string":
-        return "string" # no nullable suffix for string
+        return "string"  # no nullable suffix for string
     return f"{type}{suffix}"

@@ -9,16 +9,17 @@ from caffoa.converter import parse_type, to_camelcase
 
 
 class MemberData:
-    def __init__(self, name: str, type: str, is_date: bool, nullable: bool, default_value: Optional[str],
-                 is_required: bool, description: Optional[str], enums: Optional[str]):
+    def __init__(self, name):
+        self.is_list = False
         self.name = name
-        self.type = type
-        self.is_date = is_date
-        self.nullable = nullable
-        self.default_value = default_value
-        self.is_required = is_required
-        self.description = description
-        self.enums = enums
+        self.typename = None
+        self.is_date = False
+        self.nullable = False
+        self.default_value = None
+        self.is_required = False
+        self.description = None
+        self.enums = None
+        self.is_basic_type = True
 
 
 class ModelData:
@@ -44,9 +45,14 @@ class SchemaParser:
         parser = ResolvingParser(input_file, strict=False, resolve_types=RESOLVE_HTTP | RESOLVE_FILES,
                                  resolve_method=TRANSLATE_EXTERNAL)
         schemas = parser.specification["components"]["schemas"]
-        for class_name, schema in schemas.items():
+        for class_name in list(schemas.keys()):
             if ".yml_schemas_" in class_name:
-                class_name = class_name.split(".yml_schemas_")[-1]
+                new_class_name = class_name.split(".yml_schemas_")[-1]
+                schemas[new_class_name] = schemas[class_name]
+                del schemas[class_name]
+
+        for class_name, schema in schemas.items():
+            print (class_name)
             if class_name in self.excludes:
                 continue
             if len(self.includes) > 0 and class_name not in self.includes:
@@ -55,8 +61,6 @@ class SchemaParser:
 
         objects = list()
         for class_name, schema in schemas.items():
-            if ".yml_schemas_" in class_name:
-                class_name = class_name.split(".yml_schemas_")[-1]
             if self.class_name(class_name) in self.known_types:
                 continue
             if class_name in self.excludes:
@@ -84,59 +88,57 @@ class SchemaParser:
         if "properties" in schema:
             required_props = schema.get('required', list())
             for name, data in schema["properties"].items():
-
+                param = MemberData(name)
                 # handle default type references
                 if "$ref" in data:
-                    typename = self.class_name_from_ref(data["$ref"])
-                    if typename in self.known_types:
-                        data = self.known_types[typename]
+                    param.typename = self.class_name_from_ref(data["$ref"])
+                    if param.typename in self.known_types:
+                        data = self.known_types[param.typename]
 
-                enums = None
-                isdate = False
-                required = name in required_props
-                nullable = "nullable" in data and data["nullable"]
+                param.is_required = name in required_props
+                param.nullable = "nullable" in data and data["nullable"]
 
                 # handle nullable references that are constructed with anyOf
                 if "anyOf" in data:
                     data = self.handle_any_of(data, name, class_name)
 
-                description = None
                 if "description" in data:
-                    description = data["description"]
+                    param.description = data["description"]
 
                 if "$ref" in data:
-                    typename, default_value = self.handle_ref(data, required)
-                    nullable = not required
+                    param.typename, param.default_value = self.handle_ref(data, param.is_required)
+                    param.nullable = not param.is_required
+                    param.is_basic_type = False
 
                 elif "type" not in data:
                     raise Warning(f"Cannot parse property without type for '{name}' in '{class_name}'")
 
                 elif data["type"] == "array":
-                    typename, default_value = self.handle_array(data, name, class_name, nullable)
+                    param.typename, param.default_value = self.handle_array(data, name, class_name, param.nullable)
                     imports.add("using System.Collections.Generic;\n")
+                    imports.add("using System.Linq;\n")
+                    param.is_list = True
+
 
                 elif data["type"] == "object":
                     if "properties" in data:
-                        print(name, data)
                         raise Warning(
                             f"Cannot parse property trees: '{name}' child of '{class_name}' should be declared in own schema directly under 'components'")
                     if "additionalProperties" in data:
-                        typename, default_value = self.handle_additional_properties(data, nullable)
+                        param.typename, param.default_value = self.handle_additional_properties(data, param.nullable)
                         imports.add("using System.Collections.Generic;\n")
                     else:
                         raise Warning(
                             f"Cannot nested object without additionalProperties: '{name}' child of '{class_name}'")
 
                 else:
-                    typename, default_value = self.handle_default_type(data, nullable)
-                    enums = self.handle_enums(name, data)
-                    if enums != None:
+                    param.typename, param.default_value = self.handle_default_type(data, param.nullable)
+                    param.enums = self.handle_enums(name, data)
+                    if param.enums is not None:
                         imports.add("using System.Collections.Immutable;\n")
-                    isdate = self.is_date(data)
+                    param.isdate = self.is_date(data)
 
-                members.append(
-                    MemberData(name, typename, isdate, nullable, default_value, name in required_props, description,
-                               enums))
+                members.append(param)
         description = None
         if "description" in schema:
             description = schema["description"]
@@ -211,6 +213,8 @@ class SchemaParser:
         return schema['type'] == "string" and schema['format'] == "date"
 
     def class_name_from_ref(self, param: str):
+        if ".yml_schemas_" in param:
+            param = param.split(".yml_schemas_")[-1]
         name = param.split('/')[-1]
         return self.class_name(name)
 

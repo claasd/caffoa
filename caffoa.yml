@@ -9,6 +9,8 @@ services:
       targetFolder: ./output/Model
       prefix: Base
       suffix: ""
+
+
     function:
       targetFolder: output
       namespace: Foo

@@ -27,7 +27,10 @@ components:
           type: string
         address:
           $ref: "base.openapi.yml#/components/schemas/address"
-
+        emails:
+          type: array
+          items:
+            type: string
 paths:
   "/users":
     get:

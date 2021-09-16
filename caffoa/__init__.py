@@ -49,8 +49,9 @@ def execute():
             model = config["model"]
             prefix = model.get("prefix", "")
             suffix = model.get("suffix", "")
+            imports = model.get("imports", list())
             if not "namespace" in model or not "targetFolder" in model:
                 raise Warning(f"model needs children 'namespace' and 'targetFolder' in service #{id}")
             excludes = list(model.get('excludes', list()))
             includes = list(model.get('includes', list()))
-            generate_schemas(api, model["targetFolder"], model['namespace'], prefix, suffix, excludes, includes, duplication_handler, version)
+            generate_schemas(api, model["targetFolder"], model['namespace'], prefix, suffix, excludes, includes, duplication_handler, version, imports)

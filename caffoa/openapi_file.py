@@ -1,10 +1,11 @@
 from prance import ResolvingParser
 from prance.util.resolver import RESOLVE_HTTP, RESOLVE_FILES, TRANSLATE_EXTERNAL
 
-from caffoa.function_parser import FunctionParser
 from caffoa.function_writer import FunctionWriter
+from caffoa.interface_writer import InterfaceWriter
 from caffoa.model_parser import ModelParser
 from caffoa.model_writer import ModelWriter
+from caffoa.path_parser import PathParser
 
 
 class OpenApiFile:
@@ -50,18 +51,20 @@ class OpenApiFile:
         if not "name" in config or not "namespace" in config or not "targetFolder" in config:
             raise Warning(f"function needs children 'name', 'namespace' and 'targetFolder' in service #{id}")
 
-        parser = FunctionParser(self.function_parser())
+        parser = PathParser(self.function_parser())
         endpoints = parser.parse()
 
         name = config['name']
         namespace = config["namespace"]
         target_folder = config['targetFolder']
-        writer = FunctionWriter(self.version, name, namespace, target_folder)
+
+        iwriter = InterfaceWriter(self.version, name, namespace, target_folder)
+        iwriter.interface_name = config.get('interfaceName', iwriter.interface_name)
+        iwriter.namespace = config.get('interfaceNamespace', iwriter.namespace)
+        iwriter.target_folder = config.get('interfaceTargetFolder', iwriter.target_folder)
+
+        writer = FunctionWriter(self.version, name, namespace, target_folder, iwriter.interface_name)
         writer.boilerplate = config.get('boilerplate', writer.boilerplate)
-        writer.interface_name = config.get('interfaceName', writer.interface_name)
         writer.functions_name = config.get('functionsName', writer.functions_name)
-        writer.interface_namespace = config.get('interfaceNamespace', writer.interface_namespace)
-        writer.interface_target_folder = config.get('interfaceTargetFolder', writer.interface_target_folder)
         writer.imports = config.get('imports', writer.imports)
         writer.write(endpoints)
-

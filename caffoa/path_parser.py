@@ -3,11 +3,10 @@ from typing import List
 from prance import ResolvingParser
 
 from caffoa.converter import to_camelcase, parse_type
-from caffoa.function import parse_params
 from caffoa.model import EndPoint, Parameter
 
 
-class FunctionParser:
+class PathParser:
     def __init__(self, parser: ResolvingParser):
         self.parser = parser
 
@@ -30,7 +29,7 @@ class FunctionParser:
                     documentation.append(f"{response} -> {response_data['description']}")
                 parameters = base_parameters.copy()
                 if "parameters" in config:
-                    parameters.extend(parse_params(config["parameters"]))
+                    parameters.extend(self.parse_params(config["parameters"]))
                 needs_content = "requestBody" in config
                 endpoints.append(EndPoint(operation_id, path, operation, parameters, documentation, needs_content))
         return endpoints

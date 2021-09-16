@@ -6,36 +6,25 @@ from caffoa.model import EndPoint
 
 
 class FunctionWriter:
-    def __init__(self, version: int, name: str, namespace: str, target_folder: str):
+    def __init__(self, version: int, name: str, namespace: str, target_folder: str, interface_name: str):
+        self.interface_name = interface_name
         self.version = version
-        self.name = name
         self.target_folder = target_folder
         self.namespace = namespace
         self.boilerplate = "{BASE}"
-        self.interface_name = f"I{name}Service"
         self.functions_name = f"{name}Functions"
-        self.interface_namespace = namespace
-        self.interface_target_folder = target_folder
         self.imports = list()
         self.template_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), f"data/v{version}")
         with open(self.template_folder + "/FunctionMethod.cs", "r", encoding="utf-8") as f:
             self.method_template = f.read()
         with open(self.template_folder + "/FunctionTemplate.cs", "r", encoding="utf-8") as f:
             self.class_template = f.read()
-        with open(self.template_folder + "/InterfaceMethod.cs", "r", encoding="utf-8") as f:
-            self.interface_method_template = f.read()
-        with open(self.template_folder + "/InterfaceTemplate.cs", "r", encoding="utf-8") as f:
-            self.interface_template = f.read()
 
     def write(self, endpoints: List[EndPoint]):
-        self.write_functions(endpoints)
-        self.write_interface(endpoints)
-
-    def write_functions(self, endpoints: List[EndPoint]):
         os.makedirs(self.target_folder, exist_ok=True)
         function_endpoints = []
         for ep in endpoints:
-            function_endpoints.append(self.format_function_endpoint(ep))
+            function_endpoints.append(self.format_endpoint(ep))
 
         imports = [f"using {x};\n" for x in self.imports]
         file_name = os.path.abspath(f"{self.target_folder}/{self.functions_name}.generated.cs")
@@ -47,7 +36,7 @@ class FunctionWriter:
                                                INTERFACENAME=self.interface_name,
                                                IMPORTS="".join(imports)))
 
-    def format_function_endpoint(self, endpoint: EndPoint) -> str:
+    def format_endpoint(self, endpoint: EndPoint) -> str:
         param_names = [param.name for param in endpoint.parameters]
         if endpoint.needs_content and self.version == 1:
             param_names.append("req.Content")
@@ -76,30 +65,3 @@ class FunctionWriter:
                                            PARAMS=formatted_params_with_names,
                                            PARAM_NAMES=formatted_param_names,
                                            ADDITIONAL_ERROR_INFOS="".join(extra_error_info))
-
-    def write_interface(self, endpoints: List[EndPoint]):
-        os.makedirs(self.interface_target_folder, exist_ok=True)
-        interfaces = []
-        for ep in endpoints:
-            interfaces.append(self.format_interface_endpoint(ep))
-
-        file_name = os.path.abspath(f"{self.interface_target_folder}/{self.interface_name}.generated.cs")
-        logging.info(f"Writing Interface to {file_name}")
-        with open(file_name, "w", encoding="utf-8") as f:
-            f.write(self.interface_template.format(METHODS="\n\n".join(interfaces),
-                                                   NAMESPACE=self.interface_namespace,
-                                                   CLASSNAME=self.interface_name))
-
-    def format_interface_endpoint(self, endpoint: EndPoint):
-
-        params = [f"{param.type} {param.name}" for param in endpoint.parameters]
-        if endpoint.needs_content and self.version == 1:
-            params.append("HttpContent contentPayload")
-        elif self.version == 2:
-            params.append("HttpRequest request")
-        formatted_params = ", ".join(params)
-        return self.interface_method_template.format(NAME=endpoint.name,
-                                                     OPERATION=endpoint.operation,
-                                                     PATH=endpoint.path,
-                                                     PARAMS=formatted_params,
-                                                     DOC="\n\t\t/// ".join(endpoint.documentation))

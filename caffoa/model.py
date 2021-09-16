@@ -21,7 +21,7 @@ class ModelData:
         self.name = name
         self.parent = None
         self.properties = list()
-        self.imports = set()
+        self.imports = list()
         self.description = None
 
 

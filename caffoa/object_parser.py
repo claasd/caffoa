@@ -84,8 +84,8 @@ class ObjectParser:
 
         elif data["type"] == "array":
             param.typename, param.default_value = self.handle_array(data, name, param.nullable)
-            self.result.imports.add("System.Collections.Generic")
-            self.result.imports.add("System.Linq")
+            self.result.imports.append("System.Collections.Generic")
+            self.result.imports.append("System.Linq")
             param.is_list = True
 
         elif data["type"] == "object":
@@ -94,7 +94,7 @@ class ObjectParser:
                     f"Cannot parse property trees: '{name}' child of '{self.name}' should be declared in own schema directly under 'components'")
             if "additionalProperties" in data:
                 param.typename, param.default_value = self.handle_additional_properties(data, param.nullable)
-                self.result.imports.add("System.Collections.Generic")
+                self.result.imports.append("System.Collections.Generic")
             else:
                 raise Warning(
                     f"Cannot nested object without additionalProperties: '{name}' child of '{self.name}'")
@@ -103,7 +103,7 @@ class ObjectParser:
             param.typename, param.default_value = self.handle_default_type(data, param.nullable)
             param.enums = self.handle_enums(name, data)
             if param.enums is not None:
-                self.result.imports.add("System.Collections.Immutable")
+                self.result.imports.append("System.Collections.Immutable")
             param.isdate = is_date(data)
         return param
 

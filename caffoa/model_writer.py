@@ -39,6 +39,8 @@ class ModelWriter:
     def write_model(self, model: ModelData):
         imports = [f"using {key};\n" for key in model.imports]
         imports.extend([f"using {key};\n" for key in self.additional_imports])
+        # remove duplicates but keep order:
+        imports = list(dict.fromkeys(imports))
         parent = f" : {model.parent}" if model.parent else ""
         formatted_properties = []
         for prop in model.properties:

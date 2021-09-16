@@ -23,3 +23,23 @@ class ModelData:
         self.properties = list()
         self.imports = set()
         self.description = None
+
+
+class EndPoint:
+    def __init__(self, name, path, operation, parameters: list, documentation: list, needs_content: bool):
+        self.name = name
+        self.parameters = parameters
+        self.operation = operation
+        self.path = path
+        self.documentation = documentation
+        self.needs_content = needs_content
+
+    def __str__(self):
+        return f"{self.operation} {self.path} -> {self.parameters}"
+
+
+class Parameter:
+    def __init__(self, name: str, type: str, desc: str):
+        self.desc = desc
+        self.type = type
+        self.name = name

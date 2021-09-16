@@ -30,14 +30,11 @@ class ModelWriter:
             self.write_custom_date_converter()
 
     @staticmethod
-    def dates_in_model(model : ModelData):
+    def dates_in_model(model: ModelData):
         for prop in model.properties:
             if prop.is_date:
                 return True
         return False
-
-
-
 
     def write_model(self, model: ModelData):
         imports = [f"using {key};\n" for key in model.imports]
@@ -65,7 +62,6 @@ class ModelWriter:
                                                IMPORTS="".join(imports),
                                                PARENTS=parent,
                                                DESCRIPTION=description))
-
 
     def format_property(self, property: MemberData) -> str:
         extra = ""

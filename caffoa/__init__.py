@@ -33,4 +33,6 @@ def execute():
             handler.create_model(config["model"])
 
         if "function" in config:
-            handler.create_function(config["function"], settings.get('typed_returns', False))
+            handler.create_function(config["function"])
+        if "middleware" in config:
+            handler.create_middleware(config["middleware"])

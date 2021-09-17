@@ -28,6 +28,7 @@ class InterfaceWriter:
         with open(file_name, "w", encoding="utf-8") as f:
             f.write(self.interface_template.format(METHODS="\n\n".join(interfaces),
                                                    NAMESPACE=self.namespace,
+                                                   IMPORTS="",
                                                    CLASSNAME=self.interface_name))
 
     def format_endpoint(self, endpoint: EndPoint):
@@ -39,7 +40,5 @@ class InterfaceWriter:
             params.append("HttpRequest request")
         formatted_params = ", ".join(params)
         return self.interface_method_template.format(NAME=endpoint.name,
-                                                     OPERATION=endpoint.operation,
-                                                     PATH=endpoint.path,
                                                      PARAMS=formatted_params,
                                                      DOC="\n\t\t/// ".join(endpoint.documentation))

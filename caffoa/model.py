@@ -62,3 +62,12 @@ class Response:
 
     def __str__(self):
         return f"{self.code}/{self.content}"
+
+
+class MethodResult:
+    def __init__(self, name: str):
+        self.base = name
+        self.name = name
+        self.code = 200
+        self.codes = list()
+        self.is_simple = True

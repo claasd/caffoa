@@ -150,7 +150,7 @@ class ObjectParser(BaseObjectParser):
             typename = self.class_name_from_ref(props["$ref"])
         else:
             typename = parse_type(props, nullable)
-        return f"Dictionary<string, {typename}>", f"new {typename}()"
+        return f"Dictionary<string, {typename}>", f"new Dictionary<string, {typename}>()"
 
     def handle_default_type(self, data: dict, nullable: bool) -> Tuple[str, str]:
         default_value = None

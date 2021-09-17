@@ -89,7 +89,6 @@ class PathParser:
                 ep = EndPoint(operation_name, path, operation, parameters, documentation, needs_content)
                 ep.responses = self.responses.get(operation_id)
                 endpoints.append(ep)
-                print(ep)
         return endpoints
 
     @staticmethod

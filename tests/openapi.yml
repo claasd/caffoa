@@ -31,6 +31,16 @@ components:
           type: array
           items:
             type: string
+
+    userWithId:
+      allOf:
+        - $ref: "#/components/schemas/user"
+        - type: object
+          properties:
+            id:
+              type: string
+
+
   responses:
     error:
       description: Error
@@ -65,6 +75,23 @@ paths:
         description: Start of the slice.
         schema:
           type: string
+    put:
+      operationId: user-put
+      description: create or update a user
+      responses:
+        "200":
+          description: User was updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/user"
+        "201":
+          description: User was created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/user"
+
 
     get:
       tags:

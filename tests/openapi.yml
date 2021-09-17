@@ -31,6 +31,13 @@ components:
           type: array
           items:
             type: string
+  responses:
+    error:
+      description: Error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/error"
 paths:
   "/users":
     get:
@@ -47,6 +54,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/user"
+        "400":
+          $ref: "#/components/responses/error"
 
   "/users/{userId}":
     parameters:

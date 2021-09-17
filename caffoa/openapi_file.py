@@ -9,11 +9,13 @@ from caffoa.path_parser import PathParser
 
 
 class OpenApiFile:
-    def __init__(self, name: str, version: int):
+    def __init__(self, name: str, version: int, config: dict):
         self.version = version
         self.name = name
+        self.base_config = config
         self._model_parser = None
         self._function_parser = None
+        self.model = None
 
     def model_parser(self):
         if self._model_parser is None:
@@ -37,8 +39,8 @@ class OpenApiFile:
         if not "namespace" in config or not "targetFolder" in config:
             raise Warning(f"model needs children 'namespace' and 'targetFolder' in service #{id}")
         parser = ModelParser()
-        parser.prefix = config.get("prefix", "")
-        parser.suffix = config.get("suffix", "")
+        parser.prefix = config.get("prefix", self.base_config.get("prefix", ""))
+        parser.suffix = config.get("suffix", self.base_config.get("suffix", ""))
 
         parser.excludes = list(config.get('excludes', list()))
         parser.includes = list(config.get('includes', list()))
@@ -47,11 +49,15 @@ class OpenApiFile:
         writer.additional_imports = config.get("imports", list())
         writer.write(model)
 
-    def create_function(self, config: dict):
+    def create_function(self, config: dict, typed_returns: bool):
         if not "name" in config or not "namespace" in config or not "targetFolder" in config:
-            raise Warning(f"function needs children 'name', 'namespace' and 'targetFolder' in service #{id}")
+            raise Warning(f"function needs children 'name', 'namespace' and 'targetFolder' in service {self.name}")
 
         parser = PathParser(self.function_parser())
+        parser.prefix = config.get("prefix", self.base_config.get("prefix", ""))
+        parser.suffix = config.get("suffix", self.base_config.get("suffix", ""))
+        if typed_returns:
+            parser.create_returns(self.model_parser())
         endpoints = parser.parse()
 
         name = config['name']
@@ -68,3 +74,6 @@ class OpenApiFile:
         writer.functions_name = config.get('functionsName', writer.functions_name)
         writer.imports = config.get('imports', writer.imports)
         writer.write(endpoints)
+
+        if typed_returns:
+            pass

@@ -6,10 +6,24 @@ from caffoa.converter import to_camelcase, parse_type, is_date
 from caffoa.model import ModelData, MemberData
 
 
-class ObjectParser:
-    def __init__(self, raw_name, prefix: str, suffix: str, known_types: dict):
+class BaseObjectParser:
+    def __init__(self, prefix: str, suffix: str):
         self.suffix = suffix
         self.prefix = prefix
+
+    def class_name_from_ref(self, param: str):
+        if ".yml_schemas_" in param:
+            param = param.split(".yml_schemas_")[-1]
+        name = param.split('/')[-1]
+        return self.class_name(name)
+
+    def class_name(self, name):
+        return self.prefix + to_camelcase(name) + self.suffix
+
+
+class ObjectParser(BaseObjectParser):
+    def __init__(self, raw_name, prefix: str, suffix: str, known_types: dict):
+        super().__init__(prefix, suffix)
         self.name = raw_name
         self.known_types = known_types
         self.result = ModelData(self.name, self.class_name(self.name))
@@ -46,15 +60,6 @@ class ObjectParser:
             logging.warning("Creating class without content, no child of allOf is type object")
             to_generate = dict()
         return to_generate, parent
-
-    def class_name_from_ref(self, param: str):
-        if ".yml_schemas_" in param:
-            param = param.split(".yml_schemas_")[-1]
-        name = param.split('/')[-1]
-        return self.class_name(name)
-
-    def class_name(self, name):
-        return self.prefix + to_camelcase(name) + self.suffix
 
     def create_param(self, name: str, data: dict, required: bool) -> MemberData:
         param = MemberData(name)

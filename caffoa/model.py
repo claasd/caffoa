@@ -33,9 +33,10 @@ class EndPoint:
         self.path = path
         self.documentation = documentation
         self.needs_content = needs_content
+        self.responses = None
 
     def __str__(self):
-        return f"{self.operation} {self.path} -> {self.parameters}"
+        return f"{self.operation} {self.path} ({self.parameters}) -> {self.responses}"
 
 
 class Parameter:
@@ -43,3 +44,21 @@ class Parameter:
         self.desc = desc
         self.type = type
         self.name = name
+
+    def __repr__(self):
+        return str(self)
+
+    def __str__(self):
+        return f"{self.type} {self.name}"
+
+
+class Response:
+    def __init__(self, code):
+        self.code = int(code)
+        self.content = None
+
+    def __repr__(self):
+        return str(self)
+
+    def __str__(self):
+        return f"{self.code}/{self.content}"

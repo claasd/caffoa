@@ -25,13 +25,12 @@ def execute():
         settings = dict()
     version = settings.get("version", 1)
     duplication_handler.init(settings.get("duplicates", "overwrite"))
-
     for number, config in enumerate(services):
         if not "apiPath" in config:
             raise Warning(f"apiPath is required for service #{number}")
-        handler = OpenApiFile(config["apiPath"], version)
+        handler = OpenApiFile(config["apiPath"], version, config.get("config", dict()))
         if "model" in config:
             handler.create_model(config["model"])
 
         if "function" in config:
-            handler.create_function(config["function"])
+            handler.create_function(config["function"], settings.get('typed_returns', False))

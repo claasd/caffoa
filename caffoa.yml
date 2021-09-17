@@ -1,9 +1,12 @@
 config:
   duplicates: once # once, overwrite (default)
   version: 2 # 1 (old, partial classes, HttpResponseMessage) 2 : (new, Injection, IActionResult)
+  typed_returns: on
 services:
   - apiPath: tests\openapi.yml
-
+    config:
+      prefix: Base
+      suffix: ""
     model:
       namespace: My.Model
       targetFolder: ./output/Model

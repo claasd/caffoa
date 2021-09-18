@@ -77,9 +77,9 @@ def get_response_type(endpoint: EndPoint) -> Optional[MethodResult]:
         result.code = codes[0]
         return result
     if type is None:
-        result.name = endpoint.name + "ResultWrapper"
+        result.name = "int"
     else:
-        result.name = type + "TypeWrapper"
+        result.name = f'({type}, int)'
     result.is_simple = False
     result.codes = codes
     return result

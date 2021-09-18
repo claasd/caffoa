@@ -96,9 +96,11 @@ class FunctionWriter(BaseWriter):
         elif type.is_simple:
             params['RESULT'] = f"new JsonResult(result) {{StatusCode = {type.code}}}"
         elif type.base is None:
-            params['RESULT'] = "new StatusCodeResult((int)result.ResultCode)"
+            params['RESULT'] = "new StatusCodeResult(code)"
+            params['VALUE'] = "var code = "
         else:
-            params['RESULT'] = "new JsonResult(result.Data) {StatusCode = (int)result.ResultCode}"
+            params['RESULT'] = "new JsonResult(result) {StatusCode = code}"
+            params['VALUE'] = "var (result, code) = "
         return params
 
     @staticmethod

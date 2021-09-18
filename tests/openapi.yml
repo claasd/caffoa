@@ -91,7 +91,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/user"
+    post:
+      operationId: user-post
+      description: create or update a user without return test
+      responses:
+        "200":
+          description: User was updated
 
+        "201":
+          description: User was created
 
     get:
       tags:

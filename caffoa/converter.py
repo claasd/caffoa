@@ -1,4 +1,8 @@
+import logging
 import os
+from typing import List, Optional
+
+from caffoa.model import Response, MethodResult
 
 
 def capitalize_first(data: str) -> str:
@@ -16,6 +20,10 @@ def is_date(schema: dict):
     if "format" not in schema or "type" not in schema:
         return False
     return schema['type'] == "string" and schema['format'] == "date"
+
+
+def is_primitive(type: str):
+    return type.lower() in ["string", "integer", "number", "boolean"]
 
 
 def parse_type(schema: dict, nullable: bool = False) -> str:
@@ -46,3 +54,29 @@ def parse_type(schema: dict, nullable: bool = False) -> str:
     if type == "string":
         return "string"  # no nullable suffix for string
     return f"{type}{suffix}"
+
+
+def get_response_type(responses: List[Response]) -> Optional[MethodResult]:
+    type = None
+    codes = list()
+    if responses is None:
+        return None
+    for response in responses:
+        if 200 <= response.code < 300:
+            if type is not None and type != response.content:
+                logging.warning("Returning different objects is not supported")
+                return None
+            type = response.content
+            codes.append(response.code)
+    if len(codes) == 0:
+        return None
+    result = MethodResult(type)
+    if len(codes) == 1:
+        result = MethodResult(type)
+        result.code = codes[0]
+        return result
+
+    result.name = type + "ResultWrapper"
+    result.is_simple = False
+    result.codes = codes
+    return result

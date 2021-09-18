@@ -1,0 +1,13 @@
+config:
+  duplicates: once # once, overwrite (default)
+  version: 1 # 1 (old, partial classes, HttpResponseMessage) 2 : (new, Injection, IActionResult)
+services:
+  - apiPath: tests\openapi.yml
+    model:
+      namespace: My.Model
+      targetFolder: ./output/v1/Model
+    function:
+      targetFolder: output/v1
+      namespace: Foo
+      name: Foo
+

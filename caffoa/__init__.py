@@ -34,5 +34,3 @@ def execute():
 
         if "function" in config:
             handler.create_function(config["function"])
-        if "middleware" in config:
-            handler.create_middleware(config["middleware"])

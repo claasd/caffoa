@@ -4,10 +4,13 @@
         [FunctionName("{NAME}")]
         public async Task<IActionResult> {NAME}(
             [HttpTrigger(AuthorizationLevel.Function, "{OPERATION}", Route = "{PATH}")]
-            HttpRequest request{PARAMS})
+            HttpRequest request{PARAM_NAMES})
         {{
             try {{
-                {INVOCATION}
+                {VALUE}await _service.{NAME}({PARAMS});
+                return {RESULT};
+            }} catch(CaffoaClientError err) {{
+                return err.Result;
             }} catch (Exception e) {{
                 var debugInformation = new Dictionary<string,  string>();
                 debugInformation["Error"] = e.Message;

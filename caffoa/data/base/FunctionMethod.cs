@@ -2,9 +2,9 @@
         /// auto-generated function invocation.
         ///</summary>
         [FunctionName("{NAME}")]
-        public static async Task<HttpResponseMessage> {NAME}(
+        public async Task<IActionResult> {NAME}(
             [HttpTrigger(AuthorizationLevel.Function, "{OPERATION}", Route = "{PATH}")]
-            HttpRequestMessage req{PARAM_NAMES}, ILogger log)
+            HttpRequest request{PARAM_NAMES})
         {{
             try {{
                 {INVOCATION}
@@ -12,12 +12,12 @@
                 var debugInformation = new Dictionary<string,  string>();
                 debugInformation["Error"] = e.Message;
                 debugInformation["ExecptionType"] = e.GetType().Name;
-                debugInformation["FunctionName"] = "{NAME}";
-		        debugInformation["Route"] = "{PATH}";
-		        debugInformation["Operation"] = "{OPERATION}";
-		        debugInformation["Payload"] = await GetPayloadForExceptionLogging(req);
-		        {ADDITIONAL_ERROR_INFOS}
-		        log.LogCritical(JsonConvert.SerializeObject(debugInformation));
+                debugInformation["FunctionName"] = "UsersGetAsync";
+		        debugInformation["Route"] = "users";
+		        debugInformation["Operation"] = "get";
+		        debugInformation["Payload"] = GetPayloadForExceptionLogging(request);
+
+		        _logger.LogCritical(JsonConvert.SerializeObject(debugInformation));
 		        throw;
             }}
         }}

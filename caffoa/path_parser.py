@@ -3,7 +3,7 @@ from typing import List
 
 from prance import ResolvingParser
 
-from caffoa.converter import to_camelcase, parse_type
+from caffoa.converter import to_camelcase, parse_type, is_primitive
 from caffoa.model import EndPoint, Parameter, Response
 from caffoa.object_parser import BaseObjectParser
 
@@ -14,6 +14,7 @@ class PathParser:
         self.prefix = ""
         self.parser = parser
         self.responses = dict()
+        self.known_types = list()
 
     def create_returns(self, model_parser: ResolvingParser):
         for path, options in model_parser.specification['paths'].items():
@@ -52,14 +53,22 @@ class PathParser:
             schema = content[type]['schema']
             object_parser = BaseObjectParser(self.prefix, self.suffix)
             if "$ref" in schema:
-                response.content = object_parser.class_name_from_ref(schema["$ref"])
+                response.content = self.name_for_ref(schema["$ref"])
+            elif "type" in schema and is_primitive(schema["type"]):
+                response.content = parse_type(schema)
             elif "type" in schema and schema["type"].lower() == "array":
-                if "$ref" not in schema["items"]:
-                    raise Warning("Cannot create response type for array without reference")
-                name = object_parser.class_name_from_ref(schema["items"]["$ref"])
-                response.content = f"IEnumerable<{name}>"
+                if "$ref" in schema["items"]:
+                    name = self.name_for_ref(schema["items"]["$ref"])
+                    response.content = f"IEnumerable<{name}>"
+                elif "type" in schema["items"] and is_primitive(schema["items"]["type"]):
+                    type = parse_type(schema["items"])
+                    response.content = f"IEnumerable<{type}>"
+                else:
+                    raise Warning("Cannot create response type for array with complex type that is not a reference")
+
             else:
-                raise Warning("Cannot generate typed responses: only responses with direct reference or array with reference are supported")
+                raise Warning(
+                    "Cannot generate typed responses: only responses with direct reference or array with reference are supported")
 
         return response
 
@@ -90,6 +99,12 @@ class PathParser:
                 ep.responses = self.responses.get(operation_id)
                 endpoints.append(ep)
         return endpoints
+
+    def name_for_ref(self, ref):
+        name = BaseObjectParser(self.prefix, self.suffix).class_name_from_ref(ref)
+        if name in self.known_types:
+            return self.known_types[name]["type"]
+        return name
 
     @staticmethod
     def operation_name(operation_id) -> str:

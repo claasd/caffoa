@@ -1,0 +1,13 @@
+config:
+  duplicates: once # once, overwrite (default)
+  version: 3 # 1 (old, partial classes, HttpResponseMessage) 2 : (DependecyInjection, IActionResult) 3: return objects
+services:
+  - apiPath: tests\openapi.yml
+    model:
+      namespace: My.Model3
+      targetFolder: ./output/v3/Model
+    function:
+      targetFolder: output/v3
+      namespace: Foo3
+      name: Foo3
+

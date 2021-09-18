@@ -1,4 +1,4 @@
         /// <summary>
         /// {DOC}
         /// </summary>
-        Task<{RESULT}> {NAME}({PARAMS});
+        Task{RESULT} {NAME}({PARAMS});

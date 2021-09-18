@@ -90,8 +90,8 @@ services:
     model:
       namespace: MyNamespace.Model
       targetFolder: ./output/Model
-      prefix: Base # you can add an optional prefix to your model classes
-      suffix: Object # you can add an optional suffix to your model classes
+      prefix: Base # you can add an optional prefix to your base classes
+      suffix: Object # you can add an optional suffix to your base classes
       # you can exclude objects from generation:
       excludes:
        - objectToExclude

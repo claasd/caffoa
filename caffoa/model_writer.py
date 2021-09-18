@@ -3,22 +3,23 @@ import os
 from typing import List
 
 from caffoa import duplication_handler
+from caffoa.base_writer import BaseWriter
 from caffoa.converter import to_camelcase
 from caffoa.model import ModelData, MemberData
 
 
-class ModelWriter:
+class ModelWriter(BaseWriter):
     def __init__(self, version: int, namespace: str, output_folder: str):
+        super().__init__(version)
         self.output_folder = output_folder
         self.namespace = namespace
         self.additional_imports = list()
-        self.template_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), f"data/v{version}")
-        with open(self.template_folder + "/ModelTemplate.cs", "r", encoding="utf-8") as f:
-            self.model_template = f.read()
-        with open(self.template_folder + "/ModelPropertyTemplate.cs", "r", encoding="utf-8") as f:
-            self.prop_template = f.read()
+
+        self.model_template = self.load_template("ModelTemplate.cs")
+        self.prop_template = self.load_template("ModelPropertyTemplate.cs")
 
     def write(self, models: List[ModelData]):
+        os.makedirs(self.output_folder, exist_ok=True)
         dates_in_models = False
         for model in models:
             if duplication_handler.should_generate(model.name):

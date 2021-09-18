@@ -4,7 +4,7 @@ import re
 
 from prance import ResolvingParser
 
-from caffoa.converter import parse_type, to_camelcase
+from caffoa.converter import parse_type, to_camelcase, is_primitive
 from caffoa.model import ModelData, MemberData
 from caffoa.object_parser import ObjectParser
 
@@ -28,11 +28,9 @@ class ModelParser:
                 continue
             if len(self.includes) > 0 and class_name not in self.includes:
                 continue
-            if "type" in schema:
-                typename = schema["type"]
-                if typename in ["string", "integer", "number", "boolean"]:
-                    class_name = self.class_name(class_name)
-                    self.known_types[class_name] = schema
+            if "type" in schema and is_primitive(schema["type"]):
+                class_name = self.class_name(class_name)
+                self.known_types[class_name] = schema
 
     def parse_objects(self, schemas: dict) -> List[ModelData]:
         objects = list()

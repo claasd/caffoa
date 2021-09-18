@@ -18,6 +18,7 @@ class InterfaceWriter(BaseWriter):
         self.interface_method_template = self.load_template("InterfaceMethod.cs")
         self.interface_template = self.load_template("InterfaceTemplate.cs")
         self.result_wrapper_template = self.load_template("ResultWrapperTemplate.cs")
+        self.result_code_wrapper_template = self.load_template("ResultCodeWrapperTemplate.cs")
 
     def write(self, endpoints: List[EndPoint]):
         os.makedirs(self.target_folder, exist_ok=True)
@@ -54,7 +55,7 @@ class InterfaceWriter(BaseWriter):
         formatted_params = ", ".join(params)
         result = ""
         if self.version > 2:
-            type = get_response_type(endpoint.responses)
+            type = get_response_type(endpoint)
             if type is None:
                 result = "<IActionResult>"
             elif type.name is None:
@@ -67,12 +68,11 @@ class InterfaceWriter(BaseWriter):
                                                      RESULT=result,
                                                      DOC="\n\t\t/// ".join(endpoint.documentation))
 
-
     def write_result_wrappers(self, endpoints: List[EndPoint]) -> bool:
         imports_str = "".join([f"using {imp};\n" for imp in self.imports])
         wrappers = list()
         for endpoint in endpoints:
-            type = get_response_type(endpoint.responses)
+            type = get_response_type(endpoint)
             if type is None or type.is_simple:
                 continue
             wrappers.append(type)
@@ -84,10 +84,14 @@ class InterfaceWriter(BaseWriter):
 
             file_name = os.path.abspath(f"{self.target_folder}/Wrappers/{type.name}.generated.cs")
             logging.info(f"Writing result wrapper to {file_name}")
+            if type.base is None:
+                template = self.result_code_wrapper_template;
+            else:
+                template = self.result_wrapper_template
             with open(file_name, "w", encoding="utf-8") as f:
-                f.write(self.result_wrapper_template.format(NAMESPACE=self.namespace + ".Wrappers",
-                                                            NAME=type.name,
-                                                            BASE=type.base,
-                                                            CODES=",\n\t\t\t".join(codes),
-                                                            IMPORTS=imports_str))
+                f.write(template.format(NAMESPACE=self.namespace + ".Wrappers",
+                                        NAME=type.name,
+                                        BASE=type.base,
+                                        CODES=",\n\t\t\t".join(codes),
+                                        IMPORTS=imports_str))
         return True

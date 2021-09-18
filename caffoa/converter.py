@@ -2,7 +2,7 @@ import logging
 import os
 from typing import List, Optional
 
-from caffoa.model import Response, MethodResult
+from caffoa.model import Response, MethodResult, EndPoint
 
 
 def capitalize_first(data: str) -> str:
@@ -56,7 +56,8 @@ def parse_type(schema: dict, nullable: bool = False) -> str:
     return f"{type}{suffix}"
 
 
-def get_response_type(responses: List[Response]) -> Optional[MethodResult]:
+def get_response_type(endpoint: EndPoint) -> Optional[MethodResult]:
+    responses = endpoint.responses
     type = None
     codes = list()
     if responses is None:
@@ -75,8 +76,10 @@ def get_response_type(responses: List[Response]) -> Optional[MethodResult]:
         result = MethodResult(type)
         result.code = codes[0]
         return result
-
-    result.name = type + "ResultWrapper"
+    if type is None:
+        result.name = endpoint.name + "ResultWrapper"
+    else:
+        result.name = type + "TypeWrapper"
     result.is_simple = False
     result.codes = codes
     return result

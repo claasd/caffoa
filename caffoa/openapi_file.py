@@ -23,12 +23,16 @@ class OpenApiFile:
         if self._model_parser is None:
             self._model_parser = ResolvingParser(self.name, strict=False, resolve_types=RESOLVE_HTTP | RESOLVE_FILES,
                                                  resolve_method=TRANSLATE_EXTERNAL)
-            schemas = self._model_parser.specification["components"]["schemas"]
-            for class_name in list(schemas.keys()):
-                if ".yml_schemas_" in class_name:
-                    new_class_name = class_name.split(".yml_schemas_")[-1]
-                    schemas[new_class_name] = schemas[class_name]
-                    del schemas[class_name]
+            try:
+                schemas = self._model_parser.specification["components"]["schemas"]
+                for class_name in list(schemas.keys()):
+                    if ".yml_schemas_" in class_name:
+                        new_class_name = class_name.split(".yml_schemas_")[-1]
+                        schemas[new_class_name] = schemas[class_name]
+                        del schemas[class_name]
+            except KeyError:
+                pass # no schema
+
 
         return self._model_parser
 

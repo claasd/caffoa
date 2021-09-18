@@ -50,8 +50,11 @@ class PathParser:
             if type.lower() != "application/json":
                 raise Warning(
                     f"Cannot generate typed responses for for type {type}. Only application/json is currently supported for")
-            schema = content[type]['schema']
-            object_parser = BaseObjectParser(self.prefix, self.suffix)
+            try:
+                schema = content[type]['schema']
+            except KeyError:
+                raise Warning(
+                    f"Cannot generate typed responses for for type {type}. no schema found")
             if "$ref" in schema:
                 response.content = self.name_for_ref(schema["$ref"])
             elif "type" in schema and is_primitive(schema["type"]):

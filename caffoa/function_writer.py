@@ -21,14 +21,15 @@ class FunctionWriter(BaseWriter):
         self.class_template = self.load_template("FunctionTemplate.cs")
         self.caffoa_error_template = self.load_template("CaffoaClientError.cs")
         self.client_error_template = self.load_template("ClientErrorTemplate.cs")
+        self.generic_client_error_template = self.load_template("GenericClientErrorTemplate.cs")
 
     def write(self, endpoints: List[EndPoint]):
         os.makedirs(self.target_folder, exist_ok=True)
         imports = []
         imports.extend(self.imports)
         if self.version > 2:
-            if self.write_errors(endpoints):
-                imports.append(self.namespace + ".Errors")
+            self.write_errors(endpoints)
+            imports.append(self.namespace + ".Errors")
         function_endpoints = []
         for ep in endpoints:
             function_endpoints.append(self.format_endpoint(ep))
@@ -83,7 +84,7 @@ class FunctionWriter(BaseWriter):
     def v3_params(self, endpoint: EndPoint) -> dict:
         params = self.default_params(endpoint)
         params['PARAMS'].append("request")
-        type = get_response_type(endpoint.responses)
+        type = get_response_type(endpoint)
         params['VALUE'] = "var result = "
         if type is None:
             params['RESULT'] = "result"
@@ -94,6 +95,8 @@ class FunctionWriter(BaseWriter):
             params['RESULT'] = f"new StatusCodeResult(result)"
         elif type.is_simple:
             params['RESULT'] = f"new JsonResult(result) {{StatusCode = {type.code}}}"
+        elif type.base is None:
+            params['RESULT'] = "new StatusCodeResult((int)result.ResultCode)"
         else:
             params['RESULT'] = "new JsonResult(result.Data) {StatusCode = (int)result.ResultCode}"
         return params
@@ -116,21 +119,23 @@ class FunctionWriter(BaseWriter):
 
     def write_errors(self, endpoints: List[EndPoint]):
         error_classes = dict()
+        generic_error_classes = dict()
         for endpoint in endpoints:
             if endpoint.responses is None:
                 continue
             for response in endpoint.responses:
                 if 400 <= response.code < 500:
                     name = response.content
+                    if name is None:
+                        generic_error_classes[f'Generic{response.code}'] = response.code
+                        continue
                     if name in error_classes:
                         if error_classes[name] != response.code:
                             raise Warning(
                                 "The same response object with different error codes is currently not supported")
                     error_classes[name] = response.code
-        imports_str = "".join([f"using {imp};\n" for imp in self.imports])
-        if len(error_classes) == 0:
-            return False
 
+        imports_str = "".join([f"using {imp};\n" for imp in self.imports])
         os.makedirs(self.target_folder + "/Errors", exist_ok=True)
         file_name = os.path.abspath(f"{self.target_folder}/Errors/CaffoaClientError.generated.cs")
         logging.info(f"Writing Client Error to {file_name}")
@@ -145,4 +150,10 @@ class FunctionWriter(BaseWriter):
                                                           NAME=name,
                                                           CODE=code,
                                                           IMPORTS=imports_str))
-        return True
+        for name, code in generic_error_classes.items():
+            file_name = os.path.abspath(f"{self.target_folder}/Errors/{name}ClientError.generated.cs")
+            logging.info(f"Writing Client Error to {file_name}")
+            with open(file_name, "w", encoding="utf-8") as f:
+                f.write(self.generic_client_error_template.format(NAMESPACE=self.namespace + ".Errors",
+                                                          NAME=name,
+                                                          CODE=code))

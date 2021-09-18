@@ -24,7 +24,7 @@ class FunctionWriter(BaseWriter):
 
     def write(self, endpoints: List[EndPoint]):
         os.makedirs(self.target_folder, exist_ok=True)
-        imports = ["System.Collections.Generic"]
+        imports = []
         imports.extend(self.imports)
         if self.version > 2:
             if self.write_errors(endpoints):
@@ -52,7 +52,7 @@ class FunctionWriter(BaseWriter):
             template_params = self.v3_params(endpoint)
         template_params["PARAMS"] = ", ".join(template_params["PARAMS"])
         if len(template_params["PARAM_NAMES"]) > 0:
-            template_params["PARAM_NAMES"] = "," + (", ".join(template_params["PARAM_NAMES"]))
+            template_params["PARAM_NAMES"] = ", " + (", ".join(template_params["PARAM_NAMES"]))
         else:
             template_params["PARAM_NAMES"] = ""
         return self.method_template.format_map(template_params)

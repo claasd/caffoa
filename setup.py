@@ -5,10 +5,10 @@ with open("README.md", "r") as fh:
 
 setup(
     name='caffoa',
-    version='0.26.0',
+    version='0.27.0',
     packages=['caffoa'],
     package_data={
-        'caffoa': ['./data/v1/*', './data/v2/*'],
+        'caffoa': ['./data/**/*'],
     },
     include_package_data=True,
     url='https://github.com/claasd/caffoa',

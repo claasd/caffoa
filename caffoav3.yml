@@ -1,103 +1,13 @@
 config:
   duplicates: once # once, overwrite (default)
-  version: 3
+  version: 3 # 1 (old, partial classes, HttpResponseMessage) 2 : (new, Injection, IActionResult)
 services:
-  - apiPath: ../../beenic/service-user-management/apis/user-management.openapi.yml
+  - apiPath: tests\openapi.yml
     model:
-      namespace: DataBackend.TariffCache.Model
-      targetFolder: output/DataBackend.TariffCache/Model
-      prefix: Base
-      includes:
-        - tariffAdvancePayment
-        - tariffBasePrice
-
-  - apiPath: ../../beenic/service-user-management/apis/b2b.user-management.openapi.yml
-    config:
-      prefix: Base
+      namespace: My.Model3
+      targetFolder: ./output/v3/Model
     function:
-      namespace: B2BService
-      name: B2BManagement
-      targetFolder: output/B2BService
-    model:
-      namespace: UserManagement.Common.Model.Base
-      targetFolder: output/UserManagement.Common/Model/Base
-      excludes:
-        - tariff
-      imports:
-        - DataBackend.TariffCache.Model
-  - apiPath: ../../beenic/service-user-management/apis/user-management.openapi.yml
-    config:
-      prefix: Base
+      targetFolder: output/v3
+      namespace: Foo3
+      name: Foo3
 
-    function:
-      namespace: UserService
-      name: UserManagement
-      targetFolder: output/UserService
-    model:
-      namespace: UserManagement.Common.Model.Base
-      targetFolder: output/UserManagement.Common/Model/Base
-      excludes:
-        - bill
-        - electricMeterUpdate
-
-
-
-  - apiPath: ../../beenic/service-user-management/apis/legacy.openapi.yml
-    function:
-      namespace: LegacyService
-      name: LegacyUser
-      targetFolder: output/LegacyService
-      boilerplate: |
-        try {
-            {BASE}
-        } catch(RestResponseError err) {
-            log.LogInformation($"{err.ErrorDescriptor} ({(int)err.StatusCode}): {err.ErrorMessage}");
-            return err.ToResponseMessage();
-        }
-
-  - apiPath: ../../beenic/service-user-management/apis/legacy-ds.openapi.yml
-    function:
-      namespace: LegacyService
-      name: LegacyDataScience
-      targetFolder: output/LegacyService
-      boilerplate: |
-        try {
-            {BASE}
-        } catch(RestResponseError err) {
-            log.LogInformation($"{err.ErrorDescriptor} ({(int)err.StatusCode}): {err.ErrorMessage}");
-            return err.ToResponseMessage();
-        }
-
-  - apiPath: ../../beenic/service-user-management/apis/ds.user-management.openapi.yml
-    config:
-      prefix: Ds
-    function:
-      namespace: DataScienceService
-      name: DataScience
-      targetFolder: output/DataScienceService
-    model:
-      namespace: DataScienceService.Model
-      targetFolder: output/DataScienceService/Model
-
-  - apiPath: ../../beenic/service-user-management/apis/internal-onboarding.yml
-    model:
-      namespace: DataBackend.SensorOnboarding.Model
-      targetFolder: output/DataBackend.SensorOnboarding/Model
-
-  - apiPath: ../../beenic/service-user-management/apis/b2b-fresh.openapi.yml
-    config:
-      prefix: Fresh
-    function:
-      namespace: B2BFreshService
-      name: B2BFreshManagement
-      targetFolder: output/B2BFreshService
-      boilerplate: |
-        try {
-            {BASE}
-        } catch(RestResponseError err) {
-            log.LogInformation($"{err.ErrorDescriptor} ({(int)err.StatusCode}): {err.ErrorMessage}");
-            return err.ToResponseMessage();
-        }
-    model:
-      namespace: B2BFreshService.Model
-      targetFolder: output/B2BFreshService/Model/

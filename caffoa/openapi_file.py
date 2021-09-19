@@ -63,6 +63,7 @@ class OpenApiFile:
         parser.suffix = self.base_config.get("suffix", "")
         if create_returns:
             parser.create_returns(self.model_parser())
+            parser.create_bodies(self.model_parser())
         return parser.parse()
 
     def create_function(self, config: dict):

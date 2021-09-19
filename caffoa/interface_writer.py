@@ -43,16 +43,20 @@ class InterfaceWriter(BaseWriter):
             logging.info(f"Writing Factory Interface to {file_name}")
             with open(file_name, "w", encoding="utf-8") as f:
                 f.write(self.factory_interface_template.format(NAMESPACE=self.namespace,
-                                                       CLASSNAME=self.interface_name))
-
+                                                               CLASSNAME=self.interface_name))
 
     def format_endpoint(self, endpoint: EndPoint):
-
         params = [f"{param.type} {param.name}" for param in endpoint.parameters]
         if endpoint.needs_content and self.version == 1:
             params.append("HttpContent contentPayload")
-        elif self.version > 1 and not self.use_factory:
-            params.append("HttpRequest request")
+        elif self.version > 1:
+            if endpoint.needs_content and endpoint.body is not None:
+                params.append(f"{endpoint.body} payload")
+            elif endpoint.needs_content and self.use_factory:
+                params.append(f"Stream stream")
+            if not self.use_factory:
+                params.append("HttpRequest request")
+
         formatted_params = ", ".join(params)
         result = ""
         if self.version > 2:
@@ -68,4 +72,3 @@ class InterfaceWriter(BaseWriter):
                                                      PARAMS=formatted_params,
                                                      RESULT=result,
                                                      DOC="\n\t\t/// ".join(endpoint.documentation))
-

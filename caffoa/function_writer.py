@@ -78,6 +78,8 @@ class FunctionWriter(BaseWriter):
         template_params = self.default_params(endpoint)
         if self.use_factory:
             func_invocation = ".Instance(request)"
+            if endpoint.needs_content:
+                template_params['PARAMS'].append("request.Body")
         else:
             func_invocation = ""
             template_params['PARAMS'].append("request")
@@ -93,6 +95,10 @@ class FunctionWriter(BaseWriter):
         params = self.default_params(endpoint)
         type = get_response_type(endpoint)
         params['VALUE'] = "var result = "
+        if endpoint.needs_content and endpoint.body != None:
+            params['PARAMS'].append(f"await ParseJson<{endpoint.body}>(request.Body)")
+        elif endpoint.needs_content and self.use_factory:
+            params['PARAMS'].append("request.Body")
         if self.use_factory:
             params["FACTORY_CALL"] = "Instance(request)."
         else:
@@ -113,6 +119,10 @@ class FunctionWriter(BaseWriter):
         else:
             params['RESULT'] = "new JsonResult(result) {StatusCode = code}"
             params['VALUE'] = "var (result, code) = "
+        error_infos = [f'("{param.name}", {param.name})' for param in
+                            endpoint.parameters]
+        if len(error_infos) > 0:
+            params['ADDITIONAL_ERROR_INFOS'] = ", " + (", ".join(error_infos))
         return params
 
     @staticmethod
@@ -129,7 +139,8 @@ class FunctionWriter(BaseWriter):
             INVOCATION="",
             RESULT="",
             VALUE="",
-            FACTORY_CALL=""
+            FACTORY_CALL="",
+            CONVERT=""
         )
 
     def write_errors(self, endpoints: List[EndPoint]):

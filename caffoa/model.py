@@ -34,6 +34,7 @@ class EndPoint:
         self.documentation = documentation
         self.needs_content = needs_content
         self.responses = None
+        self.body = None
 
     def __str__(self):
         return f"{self.operation} {self.path} ({self.parameters}) -> {self.responses}"

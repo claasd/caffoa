@@ -22,6 +22,37 @@ namespace {NAMESPACE}
             _service = service;
         }}
 {METHODS}
+        public async Task<T> ParseJson<T>(Stream s)
+        {{
+            string requestBody = String.Empty;
+            using (StreamReader streamReader =  new  StreamReader(s))
+                requestBody = await streamReader.ReadToEndAsync();
+            if (string.IsNullOrWhiteSpace(requestBody))
+                throw CaffoaJsonParseError.NoContent();
+            try {{
+                return JsonConvert.DeserializeObject<T>(requestBody);
+            }} catch (Exception e) {{
+                throw CaffoaJsonParseError.FromException(e);
+            }}
+        }}
+
+        public void LogException(Exception e, HttpRequest request, string functionName, string route, string operation,
+            params (string, object)[] namedParams)
+        {{
+            var debugInformation = new Dictionary<string,  string>();
+            debugInformation["Error"] = e.Message;
+            debugInformation["ExecptionType"] = e.GetType().Name;
+            debugInformation["FunctionName"] = functionName;
+            debugInformation["Route"] = route;
+            debugInformation["Operation"] = operation;
+            foreach (var (name,value) in namedParams)
+            {{
+                debugInformation["p_" + name] = value.ToString();
+            }}
+            debugInformation["Payload"] = GetPayloadForExceptionLogging(request);
+            _logger.LogCritical(JsonConvert.SerializeObject(debugInformation));
+        }}
+
         private static string GetPayloadForExceptionLogging(HttpRequest req)
         {{
 	        try

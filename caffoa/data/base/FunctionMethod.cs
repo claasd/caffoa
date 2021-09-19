@@ -7,17 +7,12 @@
             HttpRequest request{PARAM_NAMES})
         {{
             try {{
-                {INVOCATION}
+                {CONVERT}{VALUE}await _service.{FACTORY_CALL}{NAME}({PARAMS});
+                return {RESULT};
+            }} catch(CaffoaClientError err) {{
+                return err.Result;
             }} catch (Exception e) {{
-                var debugInformation = new Dictionary<string,  string>();
-                debugInformation["Error"] = e.Message;
-                debugInformation["ExecptionType"] = e.GetType().Name;
-                debugInformation["FunctionName"] = "UsersGetAsync";
-		        debugInformation["Route"] = "users";
-		        debugInformation["Operation"] = "get";
-		        debugInformation["Payload"] = GetPayloadForExceptionLogging(request);
-
-		        _logger.LogCritical(JsonConvert.SerializeObject(debugInformation));
+                LogException(e, request, "{NAME}", "{PATH}", "{OPERATION}"{ADDITIONAL_ERROR_INFOS});
 		        throw;
             }}
         }}

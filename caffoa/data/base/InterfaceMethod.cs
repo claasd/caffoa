@@ -1,4 +1,4 @@
         /// <summary>
         /// {DOC}
         /// </summary>
-        Task<IActionResult> {NAME}({PARAMS});
+        Task{RESULT} {NAME}({PARAMS});

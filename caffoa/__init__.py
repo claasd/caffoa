@@ -28,7 +28,9 @@ def execute():
     for number, config in enumerate(services):
         if not "apiPath" in config:
             raise Warning(f"apiPath is required for service #{number}")
-        handler = OpenApiFile(config["apiPath"], version, config.get("config", dict()))
+        api_config = settings.copy()
+        api_config.update(config.get("config", dict()))
+        handler = OpenApiFile(config["apiPath"], version, api_config)
         if "model" in config:
             handler.create_model(config["model"])
 

@@ -2,6 +2,7 @@ import logging
 import os
 from typing import List
 
+from caffoa import duplication_handler
 from caffoa.base_writer import BaseWriter
 from caffoa.converter import get_response_type
 from caffoa.model import EndPoint
@@ -169,17 +170,21 @@ class FunctionWriter(BaseWriter):
             f.write(self.caffoa_error_template.format(NAMESPACE=self.error_namespace))
 
         for name, code in error_classes.items():
-            file_name = os.path.abspath(f"{self.error_folder}/{name}ClientError.generated.cs")
-            logging.info(f"Writing Client Error to {file_name}")
-            with open(file_name, "w", encoding="utf-8") as f:
-                f.write(self.client_error_template.format(NAMESPACE=self.error_namespace,
-                                                          NAME=name,
-                                                          CODE=code,
-                                                          IMPORTS=imports_str))
+            if duplication_handler.should_generate("Error/" + name):
+                duplication_handler.store_generated("Error/" + name)
+                file_name = os.path.abspath(f"{self.error_folder}/{name}ClientError.generated.cs")
+                logging.info(f"Writing Client Error to {file_name}")
+                with open(file_name, "w", encoding="utf-8") as f:
+                    f.write(self.client_error_template.format(NAMESPACE=self.error_namespace,
+                                                              NAME=name,
+                                                              CODE=code,
+                                                              IMPORTS=imports_str))
         for name, code in generic_error_classes.items():
-            file_name = os.path.abspath(f"{self.error_folder}/{name}ClientError.generated.cs")
-            logging.info(f"Writing Client Error to {file_name}")
-            with open(file_name, "w", encoding="utf-8") as f:
-                f.write(self.generic_client_error_template.format(NAMESPACE=self.error_namespace,
-                                                                  NAME=name,
-                                                                  CODE=code))
+            if duplication_handler.should_generate("Error/" + name):
+                duplication_handler.store_generated("Error/" + name)
+                file_name = os.path.abspath(f"{self.error_folder}/{name}ClientError.generated.cs")
+                logging.info(f"Writing Client Error to {file_name}")
+                with open(file_name, "w", encoding="utf-8") as f:
+                    f.write(self.generic_client_error_template.format(NAMESPACE=self.error_namespace,
+                                                                      NAME=name,
+                                                                      CODE=code))

@@ -77,7 +77,7 @@ class OpenApiFile:
         target_folder = config['targetFolder']
 
         iwriter = InterfaceWriter(self.version, name, namespace, target_folder)
-        iwriter.use_factory = config.get('useFactory', iwriter.use_factory)
+        iwriter.use_factory = config.get('useFactory', self.base_config.get('useFactory', iwriter.use_factory))
         iwriter.imports.extend(config.get('imports', list()))
         iwriter.imports.extend(self.imports)
         iwriter.interface_name = config.get('interfaceName', iwriter.interface_name)
@@ -86,11 +86,12 @@ class OpenApiFile:
         iwriter.write(endpoints)
 
         writer = FunctionWriter(self.version, name, namespace, target_folder, iwriter.interface_name)
-        writer.use_factory = config.get('useFactory', writer.use_factory)
+        writer.use_factory = config.get('useFactory', self.base_config.get('useFactory', writer.use_factory))
         writer.boilerplate = config.get('boilerplate', writer.boilerplate)
         writer.functions_name = config.get('functionsName', writer.functions_name)
-        writer.error_namespace = config.get('errorNamespace', writer.error_namespace)
-        writer.error_folder = config.get('errorFolder', writer.error_folder)
+        writer.error_namespace = config.get('errorNamespace',
+                                            self.base_config.get("errorNamespace", writer.error_namespace))
+        writer.error_folder = config.get('errorFolder', self.base_config.get("errorFolder", writer.error_folder))
         writer.imports.extend(config.get('imports', list()))
         if self.version > 2:
             writer.imports.extend(self.imports)

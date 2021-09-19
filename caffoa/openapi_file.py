@@ -51,7 +51,7 @@ class OpenApiFile:
         parser.includes = list(config.get('includes', list()))
         model = parser.parse(self.model_parser())
         writer = ModelWriter(self.version, config["namespace"], config["targetFolder"])
-        writer.additional_imports = config.get("imports", list())
+        writer.additional_imports.extend(config.get("imports", self.base_config.get('imports', list())))
         writer.write(model)
         self.imports.append(writer.namespace)
         self.known_types = parser.known_types
@@ -78,7 +78,7 @@ class OpenApiFile:
 
         iwriter = InterfaceWriter(self.version, name, namespace, target_folder)
         iwriter.use_factory = config.get('useFactory', self.base_config.get('useFactory', iwriter.use_factory))
-        iwriter.imports.extend(config.get('imports', list()))
+        iwriter.imports.extend(config.get('imports', self.base_config.get('imports', list())))
         iwriter.imports.extend(self.imports)
         iwriter.interface_name = config.get('interfaceName', iwriter.interface_name)
         iwriter.namespace = config.get('interfaceNamespace', iwriter.namespace)
@@ -89,10 +89,9 @@ class OpenApiFile:
         writer.use_factory = config.get('useFactory', self.base_config.get('useFactory', writer.use_factory))
         writer.boilerplate = config.get('boilerplate', writer.boilerplate)
         writer.functions_name = config.get('functionsName', writer.functions_name)
-        writer.error_namespace = config.get('errorNamespace',
-                                            self.base_config.get("errorNamespace", writer.error_namespace))
-        writer.error_folder = config.get('errorFolder', self.base_config.get("errorFolder", writer.error_folder))
-        writer.imports.extend(config.get('imports', list()))
+        writer.error_namespace = self.base_config.get("errorNamespace", writer.error_namespace)
+        writer.error_folder = self.base_config.get("errorFolder", writer.error_folder)
+        writer.imports.extend(config.get('imports', self.base_config.get("imports", list())))
         if self.version > 2:
             writer.imports.extend(self.imports)
         writer.write(endpoints)

@@ -13,10 +13,14 @@ It uses [prance](https://pypi.org/project/prance/) for parsing the openapi spec.
 
 # Usage
 
-you need a small config file in yaml format:
+As code generation needs a lot of configuration, all configuration is done using a config file in yaml format.
+
+The minimal config file is as follows:
 ```yaml
+config:
+  version: 2
 services:
-  - apiPath: userservice.openapi.yml
+  - apiPath: my-service.openapi.yml
     function:
       name: MyClassName
       namespace: MyNamespace
@@ -40,8 +44,8 @@ the tool will create two files in the specified target folder:
 * IMyClassNameService.generated.cs
 
 Your job now is to create an implementation for the `IMyClassNameService` interface.
-Furthermore, the `MyClassNameFunction` is created as shared static class, with a shared static method called `private IMyClassNameService Service(HttpRequestMessage req, ILogger log);`
-You need to implement this function in a different file (I suggest `MyClassNameFunction.cs`), that returns your implementation of the interface. You need tu use C# 9 to use this.
+
+Furthermore, you need [Dependency Injection](https://docs.microsoft.com/en-us/azure/azure-functions/functions-dotnet-dependency-injection) to pass your implementation to the constructor of the function.
 
 Now implement all the logic in your implementation of the interface. You can now change your API, and regenerate the generated files without overwriting your code.
 
@@ -59,8 +63,25 @@ The file will contain a shared class, with all properties of the schema. You can
 ## Advanced configuration options
 There are multiple optional configuration options that you can use:
 ```yaml
+config:
+  version: 2 # 1 (legacy, default), 2 (current), 3 (experimental) 
+  useFactory: false # version 2+ if set to true, a factory interface is created additionally to the Service interface. Useful if you need to have different behaviors based on headers.
+  prefix: "Pre" # A prefix that is added to all model classes
+  suffix: "Suf" # A suffix that is added to all model classes
+  errorFolder: ./output/errors # version 3+ only. Folder where ClientError Exceptions are generated
+  errorNamespace: MyErrorNamespace # # version 3+ only. Namespace for  ClientError Exceptions are generated
+  imports: # a list of imports that will be added to most generated classes
+    - MySpecialNamespace
+  
 services:
   - apiPath: userservice.openapi.yml
+    config:
+      prefix:  # overrides the config element from the global config
+      suffix:  # overrides the config element from the global config
+      useFactory:  # overrides the config element from the global config
+      errorFolder:  # overrides the config element from the global config
+      errorNamespace:  # overrides the config element from the global config
+      imports: # overrides the imports from the global config
     function:
       name: MyClassName
       namespace: MyNamespace
@@ -70,7 +91,7 @@ services:
       interfaceNamespace: MyInterfaceNamespace # defaults to 'namespace'. If given, the interface uses this namespace
       interfaceTargetFolder: ./output/shared # defaults to 'targetFolder'. If given, the interface is written to this folder
 
-      ## you can add boilerplate code to each invocation. 
+      ## for version 1 and 2, you can add boilerplate code to each invocation. 
       ## you can add placeholders: {BASE} for the full invocation code, or {CALL} for just the function call.
       ## {BASE} will be replaced with "return await Service(req, log).{CALL};"
       ## {CALL} will be replaced with 'FunctionName(params)'
@@ -85,14 +106,34 @@ services:
         }
 
       ## if you need specific imports for your boilerplate, add them here:
-      imports:
+      imports: # overrides the imports from the config section
         - MyNamespace.Exceptions.SomethingNotFoundException
     model:
       namespace: MyNamespace.Model
       targetFolder: ./output/Model
-      prefix: Base # you can add an optional prefix to your base classes
-      suffix: Object # you can add an optional suffix to your base classes
       # you can exclude objects from generation:
       excludes:
        - objectToExclude
+      # you can also generate only some classes
+      include:
+        - objectToInclude
+        - otherObjectToInclude
+      imports: # overrides the imports from the global config
+        - someImport
+      prefix: # (Deprecated for version 3+) override prefix from the config section
+      suffix: # (Deprecated for version 3+) override suffix from the config section
 ```
+
+## Version 3
+If you have a well specified openapi doc, use only json request bodies and returns, and you want strict rules what you get to work with and what you return, you can try out version 3.
+
+Version 3 parses the return and requestBody specifications, and handles the object wrapping for you. 
+* Request bodies that have well-defined schemas will be deserialized to the object
+* Responses that have well-defined schemas will be serialized to Json responses
+* The interface will not have IActionResult returns, but need to return the actual object for the method
+* The interface will have the actual type that was passed along in the body as parameter
+* Errors (400-499) will be implemented as Exceptions, that you can throw in your implementation.
+* If you return a JSON Object with your Errors, a derived class will be created for that
+* If you have different return codes for one object (e.g. 200 or 201 for a put request), the return of the interface will be (YourObject, int).
+
+Version 3 takes over a lot of boilerplate code for you. Furthermore, it forces you to not cut corners, as you cannot return a different object than the specification calls for.

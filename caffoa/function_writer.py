@@ -4,8 +4,8 @@ from typing import List
 
 from caffoa import duplication_handler
 from caffoa.base_writer import BaseWriter
-from caffoa.converter import get_response_type
-from caffoa.model import EndPoint
+from caffoa.converter import get_response_type, is_primitive
+from caffoa.model import EndPoint, Response, MethodResult
 
 
 class FunctionWriter(BaseWriter):
@@ -113,12 +113,13 @@ class FunctionWriter(BaseWriter):
         elif type.name is None:
             params['RESULT'] = f"new StatusCodeResult(result)"
         elif type.is_simple:
-            params['RESULT'] = f"new JsonResult(result) {{StatusCode = {type.code}}}"
+            result = self.get_result_handler(type)
+            params['RESULT'] = f"new JsonResult({result}) {{StatusCode = {type.code}}}"
         elif type.base is None:
             params['RESULT'] = "new StatusCodeResult(code)"
             params['VALUE'] = "var code = "
         else:
-            params['RESULT'] = "new JsonResult(result) {StatusCode = code}"
+            params['RESULT'] = f"new JsonResult(result) {{StatusCode = code}}"
             params['VALUE'] = "var (result, code) = "
         error_infos = [f'("{param.name}", {param.name})' for param in
                             endpoint.parameters]
@@ -188,3 +189,16 @@ class FunctionWriter(BaseWriter):
                     f.write(self.generic_client_error_template.format(NAMESPACE=self.error_namespace,
                                                                       NAME=name,
                                                                       CODE=code))
+
+    def get_result_handler(self, result: MethodResult):
+        base = result.base
+        is_array = False
+        if base.startswith("IEnumerable<"):
+            base = base[12:-1]
+            is_array = True
+        if is_primitive(base):
+            return "result"
+        if is_array:
+            return f"result.Select(o=>o.To{base}())"
+        return f"result.To{result.name}()"
+

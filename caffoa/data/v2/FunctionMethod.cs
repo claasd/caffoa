@@ -15,7 +15,7 @@
                 debugInformation["FunctionName"] = "{NAME}";
 		        debugInformation["Route"] = "{PATH}";
 		        debugInformation["Operation"] = "{OPERATION}";
-		        debugInformation["Payload"] = await GetPayloadForExceptionLogging(req);
+		        debugInformation["Payload"] = GetPayloadForExceptionLogging(request);
 		        {ADDITIONAL_ERROR_INFOS}
 
 		        _logger.LogCritical(JsonConvert.SerializeObject(debugInformation));

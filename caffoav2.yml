@@ -10,4 +10,5 @@ services:
       targetFolder: output/v2
       namespace: Foo2
       name: Foo2
+      useFactory: on
 

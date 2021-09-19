@@ -12,11 +12,13 @@ class InterfaceWriter(BaseWriter):
         super().__init__(version)
         self.version = version
         self.target_folder = target_folder
+        self.use_factory = False
         self.namespace = namespace
         self.imports = list()
         self.interface_name = f"I{name}Service"
         self.interface_method_template = self.load_template("InterfaceMethod.cs")
         self.interface_template = self.load_template("InterfaceTemplate.cs")
+        self.factory_interface_template = self.load_template("FactoryInterfaceTemplate.cs")
 
     def write(self, endpoints: List[EndPoint]):
         os.makedirs(self.target_folder, exist_ok=True)
@@ -36,13 +38,20 @@ class InterfaceWriter(BaseWriter):
                                                    NAMESPACE=self.namespace,
                                                    IMPORTS=imports_str,
                                                    CLASSNAME=self.interface_name))
+        if self.version > 1 and self.use_factory:
+            file_name = os.path.abspath(f"{self.target_folder}/{self.interface_name}Factory.generated.cs")
+            logging.info(f"Writing Factory Interface to {file_name}")
+            with open(file_name, "w", encoding="utf-8") as f:
+                f.write(self.factory_interface_template.format(NAMESPACE=self.namespace,
+                                                       CLASSNAME=self.interface_name))
+
 
     def format_endpoint(self, endpoint: EndPoint):
 
         params = [f"{param.type} {param.name}" for param in endpoint.parameters]
         if endpoint.needs_content and self.version == 1:
             params.append("HttpContent contentPayload")
-        elif self.version > 1:
+        elif self.version > 1 and not self.use_factory:
             params.append("HttpRequest request")
         formatted_params = ", ".join(params)
         result = ""

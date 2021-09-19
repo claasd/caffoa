@@ -15,6 +15,7 @@ class FunctionWriter(BaseWriter):
         self.target_folder = target_folder
         self.namespace = namespace
         self.boilerplate = "{BASE}"
+        self.use_factory = False
         self.functions_name = f"{name}Functions"
         self.error_folder = os.path.join(target_folder, "Errors")
         self.error_namespace = namespace + ".Errors"
@@ -36,6 +37,7 @@ class FunctionWriter(BaseWriter):
         for ep in endpoints:
             function_endpoints.append(self.format_endpoint(ep))
 
+        interface_name = self.interface_name + "Factory" if self.version > 1 and self.use_factory else self.interface_name
         imports = [f"using {x};\n" for x in imports]
         file_name = os.path.abspath(f"{self.target_folder}/{self.functions_name}.generated.cs")
         logging.info(f"Writing Functions to {file_name}")
@@ -43,7 +45,7 @@ class FunctionWriter(BaseWriter):
             f.write(self.class_template.format(METHODS="\n\n".join(function_endpoints),
                                                NAMESPACE=self.namespace,
                                                CLASSNAME=self.functions_name,
-                                               INTERFACENAME=self.interface_name,
+                                               INTERFACENAME=interface_name,
                                                IMPORTS="".join(imports)))
 
     def format_endpoint(self, endpoint: EndPoint) -> str:
@@ -74,10 +76,14 @@ class FunctionWriter(BaseWriter):
 
     def v2_params(self, endpoint: EndPoint) -> dict:
         template_params = self.default_params(endpoint)
-        template_params['PARAMS'].append("request")
+        if self.use_factory:
+            func_invocation = ".Instance(request)"
+        else:
+            func_invocation = ""
+            template_params['PARAMS'].append("request")
         params = ", ".join(template_params["PARAMS"])
         function_call = f"{endpoint.name}({params})"
-        default_call = f"return await _service.{function_call};"
+        default_call = f"return await _service{func_invocation}.{function_call};"
         template_params["INVOCATION"] = self.boilerplate.replace("{BASE}", default_call) \
             .replace("{CALL}", function_call) \
             .replace("\n", "\n\t\t\t\t").strip()
@@ -85,9 +91,13 @@ class FunctionWriter(BaseWriter):
 
     def v3_params(self, endpoint: EndPoint) -> dict:
         params = self.default_params(endpoint)
-        params['PARAMS'].append("request")
         type = get_response_type(endpoint)
         params['VALUE'] = "var result = "
+        if self.use_factory:
+            params["FACTORY_CALL"] = "Instance(request)."
+        else:
+            params['PARAMS'].append("request")
+
         if type is None:
             params['RESULT'] = "result"
         elif type.name is None and type.is_simple:
@@ -118,7 +128,8 @@ class FunctionWriter(BaseWriter):
             ADDITIONAL_ERROR_INFOS="".join(extra_error_info),
             INVOCATION="",
             RESULT="",
-            VALUE=""
+            VALUE="",
+            FACTORY_CALL=""
         )
 
     def write_errors(self, endpoints: List[EndPoint]):

@@ -31,8 +31,7 @@ class OpenApiFile:
                         schemas[new_class_name] = schemas[class_name]
                         del schemas[class_name]
             except KeyError:
-                pass # no schema
-
+                pass  # no schema
 
         return self._model_parser
 
@@ -77,6 +76,7 @@ class OpenApiFile:
         target_folder = config['targetFolder']
 
         iwriter = InterfaceWriter(self.version, name, namespace, target_folder)
+        iwriter.use_factory = config.get('useFactory', iwriter.use_factory)
         iwriter.imports.extend(config.get('imports', list()))
         iwriter.imports.extend(self.imports)
         iwriter.interface_name = config.get('interfaceName', iwriter.interface_name)
@@ -85,6 +85,7 @@ class OpenApiFile:
         iwriter.write(endpoints)
 
         writer = FunctionWriter(self.version, name, namespace, target_folder, iwriter.interface_name)
+        writer.use_factory = config.get('useFactory', writer.use_factory)
         writer.boilerplate = config.get('boilerplate', writer.boilerplate)
         writer.functions_name = config.get('functionsName', writer.functions_name)
         writer.error_namespace = config.get('errorNamespace', writer.error_namespace)

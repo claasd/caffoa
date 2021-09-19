@@ -7,7 +7,7 @@
             HttpRequest request{PARAM_NAMES})
         {{
             try {{
-                {VALUE}await _service.{NAME}({PARAMS});
+                {VALUE}await _service.{FACTORY_CALL}{NAME}({PARAMS});
                 return {RESULT};
             }} catch(CaffoaClientError err) {{
                 return err.Result;

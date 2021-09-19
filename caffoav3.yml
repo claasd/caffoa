@@ -9,5 +9,7 @@ services:
     function:
       targetFolder: output/v3
       namespace: Foo3
+      errorNamespace: My.Errors
+      errorFolder:  ./output/v3/My/Errors
       name: Foo3
 

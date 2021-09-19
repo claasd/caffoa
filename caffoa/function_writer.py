@@ -16,6 +16,8 @@ class FunctionWriter(BaseWriter):
         self.namespace = namespace
         self.boilerplate = "{BASE}"
         self.functions_name = f"{name}Functions"
+        self.error_folder = os.path.join(target_folder, "Errors")
+        self.error_namespace = namespace + ".Errors"
         self.imports = list()
         self.method_template = self.load_template("FunctionMethod.cs")
         self.class_template = self.load_template("FunctionTemplate.cs")
@@ -29,7 +31,7 @@ class FunctionWriter(BaseWriter):
         imports.extend(self.imports)
         if self.version > 2:
             self.write_errors(endpoints)
-            imports.append(self.namespace + ".Errors")
+            imports.append(self.error_namespace)
         function_endpoints = []
         for ep in endpoints:
             function_endpoints.append(self.format_endpoint(ep))
@@ -138,24 +140,24 @@ class FunctionWriter(BaseWriter):
                     error_classes[name] = response.code
 
         imports_str = "".join([f"using {imp};\n" for imp in self.imports])
-        os.makedirs(self.target_folder + "/Errors", exist_ok=True)
-        file_name = os.path.abspath(f"{self.target_folder}/Errors/CaffoaClientError.generated.cs")
+        os.makedirs(self.error_folder, exist_ok=True)
+        file_name = os.path.abspath(f"{self.error_folder}/CaffoaClientError.generated.cs")
         logging.info(f"Writing Client Error to {file_name}")
         with open(file_name, "w", encoding="utf-8") as f:
-            f.write(self.caffoa_error_template.format(NAMESPACE=self.namespace + ".Errors"))
+            f.write(self.caffoa_error_template.format(NAMESPACE=self.error_namespace))
 
         for name, code in error_classes.items():
-            file_name = os.path.abspath(f"{self.target_folder}/Errors/{name}ClientError.generated.cs")
+            file_name = os.path.abspath(f"{self.error_folder}/{name}ClientError.generated.cs")
             logging.info(f"Writing Client Error to {file_name}")
             with open(file_name, "w", encoding="utf-8") as f:
-                f.write(self.client_error_template.format(NAMESPACE=self.namespace + ".Errors",
+                f.write(self.client_error_template.format(NAMESPACE=self.error_namespace,
                                                           NAME=name,
                                                           CODE=code,
                                                           IMPORTS=imports_str))
         for name, code in generic_error_classes.items():
-            file_name = os.path.abspath(f"{self.target_folder}/Errors/{name}ClientError.generated.cs")
+            file_name = os.path.abspath(f"{self.error_folder}/{name}ClientError.generated.cs")
             logging.info(f"Writing Client Error to {file_name}")
             with open(file_name, "w", encoding="utf-8") as f:
-                f.write(self.generic_client_error_template.format(NAMESPACE=self.namespace + ".Errors",
-                                                          NAME=name,
-                                                          CODE=code))
+                f.write(self.generic_client_error_template.format(NAMESPACE=self.error_namespace,
+                                                                  NAME=name,
+                                                                  CODE=code))

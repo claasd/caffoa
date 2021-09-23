@@ -117,10 +117,8 @@ class ModelWriter(BaseWriter):
         return formatted
 
     def write_custom_date_converter(self):
-        with open(self.template_folder + "/DateSerializer.cs", "r", encoding="utf-8") as f:
-            date_converter_template = f.read()
-
+        template = self.load_template("DateSerializer.cs")
         file_name = os.path.abspath(self.output_folder + f"/CustomJsonDateConverter.generated.cs")
         logging.info(f"Writing CustomJsonDateConverter -> {file_name}")
         with open(file_name, "w", encoding="utf-8") as f:
-            f.write(date_converter_template.format(NAMESPACE=self.namespace))
+            f.write(template.format(NAMESPACE=self.namespace))

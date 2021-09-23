@@ -27,6 +27,9 @@ components:
           type: string
         address:
           $ref: "base.openapi.yml#/components/schemas/address"
+        birthdate:
+          type: string
+          format: date
         emails:
           type: array
           items:

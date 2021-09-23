@@ -109,7 +109,7 @@ class ObjectParser(BaseObjectParser):
             param.enums = self.handle_enums(name, data)
             if param.enums is not None:
                 self.result.imports.append("System.Collections.Immutable")
-            param.isdate = is_date(data)
+            param.is_date = is_date(data)
         return param
 
     def handle_any_of(self, data: dict, name: str):

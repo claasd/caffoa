@@ -66,44 +66,75 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/user"
+                  $ref: "#/components/schemas/userWithId"
         "400":
           $ref: "#/components/responses/error"
+    post:
+      operationId: user-post
+      description: create or update a user without return test
+      requestBody:
+        description: a full user
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/user"
+      responses:
+        "200":
+          description: User was updated
 
+        "201":
+          description: User was created
   "/users/{userId}":
     parameters:
       - name: userId
         in: path
         required: true
-        description: Start of the slice.
+        description: the user id.
         schema:
           type: string
+
     put:
       operationId: user-put
       description: create or update a user
+      requestBody:
+        description: a full user
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/user"
+
+
       responses:
         "200":
           description: User was updated
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/user"
+                $ref: "#/components/schemas/userWithId"
         "201":
           description: User was created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/user"
-    post:
-      operationId: user-post
-      description: create or update a user without return test
+                $ref: "#/components/schemas/userWithId"
+
+    patch:
+      operationId: user-patch
+      description: update a user
+      requestBody:
+        description: a full user
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/user"
+
       responses:
         "200":
           description: User was updated
-
-        "201":
-          description: User was created
-
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/userWithId"
     get:
       tags:
         - user
@@ -115,4 +146,4 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/user"
+                $ref: "#/components/schemas/userWithId"

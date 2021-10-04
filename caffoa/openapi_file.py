@@ -1,3 +1,5 @@
+from typing import Any
+
 from prance import ResolvingParser
 from prance.util.resolver import RESOLVE_HTTP, RESOLVE_FILES, TRANSLATE_EXTERNAL
 
@@ -18,6 +20,9 @@ class OpenApiFile:
         self.model = None
         self.imports = list()
         self.known_types = dict()
+
+    def get_config(self, config: dict, name: str, default_value: Any = None):
+        return config.get(name, self.base_config.get(name, default_value))
 
     def model_parser(self):
         if self._model_parser is None:
@@ -77,21 +82,25 @@ class OpenApiFile:
         target_folder = config['targetFolder']
 
         iwriter = InterfaceWriter(self.version, name, namespace, target_folder)
-        iwriter.use_factory = config.get('useFactory', self.base_config.get('useFactory', iwriter.use_factory))
-        iwriter.imports.extend(config.get('imports', self.base_config.get('imports', list())))
+        iwriter.use_factory = self.get_config(config, "useFactory", iwriter.use_factory)
+
+        iwriter.imports.extend(self.get_config(config, "imports", list()))
         iwriter.imports.extend(self.imports)
-        iwriter.interface_name = config.get('interfaceName', iwriter.interface_name)
-        iwriter.namespace = config.get('interfaceNamespace', iwriter.namespace)
-        iwriter.target_folder = config.get('interfaceTargetFolder', iwriter.target_folder)
+        iwriter.interface_name = self.get_config(config, 'interfaceName', iwriter.interface_name)
+        iwriter.namespace = self.get_config(config, 'interfaceNamespace', iwriter.namespace)
+        iwriter.target_folder = self.get_config(config, 'interfaceTargetFolder', iwriter.target_folder)
+        iwriter.request_body_filter = self.get_config(config, 'requestBodyType', iwriter.request_body_filter)
         iwriter.write(endpoints)
 
         writer = FunctionWriter(self.version, name, namespace, target_folder, iwriter.interface_name)
-        writer.use_factory = config.get('useFactory', self.base_config.get('useFactory', writer.use_factory))
-        writer.boilerplate = config.get('boilerplate', writer.boilerplate)
-        writer.functions_name = config.get('functionsName', writer.functions_name)
-        writer.error_namespace = self.base_config.get("errorNamespace", writer.error_namespace)
-        writer.error_folder = self.base_config.get("errorFolder", writer.error_folder)
-        writer.imports.extend(config.get('imports', self.base_config.get("imports", list())))
+        writer.use_factory = self.get_config(config, 'useFactory', writer.use_factory)
+        writer.boilerplate = self.get_config(config, 'boilerplate', writer.boilerplate)
+        writer.functions_name = self.get_config(config, 'functionsName', writer.functions_name)
+        writer.error_namespace = self.get_config(config, "errorNamespace", writer.error_namespace)
+        writer.json_error_handling = self.get_config(config, "jsonErrorHandling", writer.json_error_handling)
+        writer.error_folder = self.get_config(config, "errorFolder", writer.error_folder)
+        writer.imports.extend(self.get_config(config, "imports", list()))
+        writer.request_body_filter = self.get_config(config, 'requestBodyType', list())
         if self.version > 2:
             writer.imports.extend(self.imports)
         writer.write(endpoints)

@@ -4,6 +4,7 @@ from typing import List
 
 from caffoa import duplication_handler
 from caffoa.base_writer import BaseWriter
+from caffoa.body_type_filter import BodyTypeFilter
 from caffoa.converter import get_response_type, is_primitive
 from caffoa.model import EndPoint, Response, MethodResult
 
@@ -17,9 +18,11 @@ class FunctionWriter(BaseWriter):
         self.namespace = namespace
         self.boilerplate = "{BASE}"
         self.use_factory = False
+        self.json_error_handling = {"class": "CaffoaJsonParseError"}
         self.functions_name = f"{name}Functions"
         self.error_folder = os.path.join(target_folder, "Errors")
         self.error_namespace = namespace + ".Errors"
+        self.request_body_filter = list()
         self.imports = list()
         self.method_template = self.load_template("FunctionMethod.cs")
         self.class_template = self.load_template("FunctionTemplate.cs")
@@ -34,10 +37,14 @@ class FunctionWriter(BaseWriter):
         if self.version > 2:
             self.write_errors(endpoints)
             imports.append(self.error_namespace)
+        json_error_class = self.json_error_handling["class"]
+        json_error_namespace = self.json_error_handling.get("namespace", self.error_namespace)
+        if json_error_namespace not in imports:
+            imports.append(json_error_namespace)
         function_endpoints = []
         for ep in endpoints:
             function_endpoints.append(self.format_endpoint(ep))
-
+            imports.extend(BodyTypeFilter(self.request_body_filter).additional_imports(ep))
         interface_name = self.interface_name + "Factory" if self.version > 1 and self.use_factory else self.interface_name
         imports = [f"using {x};\n" for x in imports]
         file_name = os.path.abspath(f"{self.target_folder}/{self.functions_name}.generated.cs")
@@ -47,7 +54,8 @@ class FunctionWriter(BaseWriter):
                                                NAMESPACE=self.namespace,
                                                CLASSNAME=self.functions_name,
                                                INTERFACENAME=interface_name,
-                                               IMPORTS="".join(imports)))
+                                               IMPORTS="".join(imports),
+                                               JSON_ERROR_CLASS=json_error_class))
 
     def format_endpoint(self, endpoint: EndPoint) -> str:
         if self.version == 1:
@@ -96,7 +104,10 @@ class FunctionWriter(BaseWriter):
         params = self.default_params(endpoint)
         type = get_response_type(endpoint)
         params['VALUE'] = "var result = "
-        if endpoint.needs_content and endpoint.body != None:
+        filtered_body = BodyTypeFilter(self.request_body_filter).body_type(endpoint)
+        if endpoint.needs_content and filtered_body is not None:
+            params['PARAMS'].append(f"await ParseJson<{filtered_body}>(request.Body)")
+        elif endpoint.needs_content and endpoint.body is not None:
             params['PARAMS'].append(f"await ParseJson<{endpoint.body}>(request.Body)")
         elif endpoint.needs_content and self.use_factory:
             params['PARAMS'].append("request.Body")
@@ -122,7 +133,7 @@ class FunctionWriter(BaseWriter):
             params['RESULT'] = f"new JsonResult(result) {{StatusCode = code}}"
             params['VALUE'] = "var (result, code) = "
         error_infos = [f'("{param.name}", {param.name})' for param in
-                            endpoint.parameters]
+                       endpoint.parameters]
         if len(error_infos) > 0:
             params['ADDITIONAL_ERROR_INFOS'] = ", " + (", ".join(error_infos))
         return params
@@ -133,7 +144,7 @@ class FunctionWriter(BaseWriter):
                             endpoint.parameters]
         return dict(
             NAME=endpoint.name,
-            OPERATION=endpoint.operation,
+            OPERATION=endpoint.method,
             PATH=endpoint.path,
             PARAMS=[param.name for param in endpoint.parameters],
             PARAM_NAMES=[f"{param.type} {param.name}" for param in endpoint.parameters],
@@ -201,4 +212,3 @@ class FunctionWriter(BaseWriter):
         if is_array:
             return f"result.Select(o=>o.To{base}())"
         return f"result.To{result.name}()"
-

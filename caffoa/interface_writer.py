@@ -3,6 +3,7 @@ import os
 from typing import List
 
 from caffoa.base_writer import BaseWriter
+from caffoa.body_type_filter import BodyTypeFilter
 from caffoa.converter import get_response_type
 from caffoa.model import EndPoint
 
@@ -15,6 +16,7 @@ class InterfaceWriter(BaseWriter):
         self.use_factory = False
         self.namespace = namespace
         self.imports = list()
+        self.request_body_filter = list()
         self.interface_name = f"I{name}Service"
         self.interface_method_template = self.load_template("InterfaceMethod.cs")
         self.interface_template = self.load_template("InterfaceTemplate.cs")
@@ -24,10 +26,10 @@ class InterfaceWriter(BaseWriter):
         os.makedirs(self.target_folder, exist_ok=True)
 
         interfaces = []
+        imports = ["System.Collections.Generic"]
         for ep in endpoints:
             interfaces.append(self.format_endpoint(ep))
-
-        imports = ["System.Collections.Generic"]
+            imports.extend(BodyTypeFilter(self.request_body_filter).additional_imports(ep))
         imports.extend(self.imports)
         imports_str = "".join([f"using {imp};\n" for imp in imports])
 
@@ -50,7 +52,10 @@ class InterfaceWriter(BaseWriter):
         if endpoint.needs_content and self.version == 1:
             params.append("HttpContent contentPayload")
         elif self.version > 1:
-            if endpoint.needs_content and endpoint.body is not None:
+            filtered_body = BodyTypeFilter(self.request_body_filter).body_type(endpoint)
+            if endpoint.needs_content and filtered_body is not None:
+                params.append(f"{filtered_body} payload")
+            elif endpoint.needs_content and endpoint.body is not None:
                 params.append(f"{endpoint.body} payload")
             elif endpoint.needs_content and self.use_factory:
                 params.append(f"Stream stream")
@@ -72,3 +77,5 @@ class InterfaceWriter(BaseWriter):
                                                      PARAMS=formatted_params,
                                                      RESULT=result,
                                                      DOC="\n\t\t/// ".join(endpoint.documentation))
+
+

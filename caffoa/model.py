@@ -26,10 +26,11 @@ class ModelData:
 
 
 class EndPoint:
-    def __init__(self, name, path, operation, parameters: list, documentation: list, needs_content: bool):
+    def __init__(self, operation: str, name: str, path: str, method: str, parameters: list, documentation: list, needs_content: bool):
+        self.operation = operation
         self.name = name
         self.parameters = parameters
-        self.operation = operation
+        self.method = method.lower()
         self.path = path
         self.documentation = documentation
         self.needs_content = needs_content
@@ -37,7 +38,7 @@ class EndPoint:
         self.body = None
 
     def __str__(self):
-        return f"{self.operation} {self.path} ({self.parameters}) -> {self.responses}"
+        return f"{self.method} {self.path} ({self.parameters}) -> {self.responses}"
 
 
 class Parameter:

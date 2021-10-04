@@ -116,7 +116,7 @@ class PathParser:
                 if "parameters" in config:
                     parameters.extend(self.parse_params(config["parameters"]))
                 needs_content = "requestBody" in config
-                ep = EndPoint(operation_name, path, operation, parameters, documentation, needs_content)
+                ep = EndPoint(operation_id, operation_name, path, operation, parameters, documentation, needs_content)
                 ep.responses = self.responses.get(operation_id)
                 ep.body = self.bodies.get(operation_id)
                 endpoints.append(ep)

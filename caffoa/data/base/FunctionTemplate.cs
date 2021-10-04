@@ -29,11 +29,11 @@ namespace {NAMESPACE}
             using (StreamReader streamReader =  new  StreamReader(s))
                 requestBody = await streamReader.ReadToEndAsync();
             if (string.IsNullOrWhiteSpace(requestBody))
-                throw CaffoaJsonParseError.NoContent();
+                throw {JSON_ERROR_CLASS}.NoContent();
             try {{
                 return JsonConvert.DeserializeObject<T>(requestBody);
             }} catch (Exception e) {{
-                throw CaffoaJsonParseError.FromException(e);
+                throw {JSON_ERROR_CLASS}.FromException(e);
             }}
         }}
 

@@ -1,12 +1,22 @@
 config:
   duplicates: once # once, overwrite (default)
   version: 3 # 1 (old, partial classes, HttpResponseMessage) 2 : (new, Injection, IActionResult)
+  requestBodyType: # overwrite the JSON type that is passed to the method for some operations
+    - type: JObject
+      filter: # the type is overwritten if one of the filters match
+        operations:
+          - user-patch
+        methods:
+          - patch
 services:
   - apiPath: tests\openapi.yml
     model:
       namespace: My.Model3
       targetFolder: ./output/v3/Model
     function:
+      jsonErrorHandling:
+        class: ErrorClientError
+        namespace: My.Errors
       targetFolder: output/v3
       namespace: Foo3
       errorNamespace: My.Errors

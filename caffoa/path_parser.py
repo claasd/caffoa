@@ -45,7 +45,7 @@ class PathParser:
 
     def create_bodies(self, model_parser: ResolvingParser):
         one_of_schemas = dict()
-        for name, schema in model_parser.specification['components']["schemas"].items():
+        for name, schema in model_parser.specification['components'].get("schemas", dict()).items():
             if "oneOf" in schema:
                 one_of_schemas[name] = schema
 

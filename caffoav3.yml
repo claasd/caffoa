@@ -14,9 +14,9 @@ services:
       namespace: My.Model3
       targetFolder: ./output/v3/Model
     function:
-      jsonErrorHandling:
-        class: ErrorClientError
-        namespace: My.Errors
+#      jsonErrorHandling:
+#        class: ErrorClientError
+#        namespace: My.Errors
       targetFolder: output/v3
       namespace: Foo3
       errorNamespace: My.Errors

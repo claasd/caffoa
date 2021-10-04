@@ -23,6 +23,11 @@ namespace {NAMESPACE}
         {{
             return new CaffoaJsonParseError(err.GetType().Name + ": " + err.Message);
         }}
+
+        public static Exception WrongContent(string type, object value)
+        {{
+            return new CaffoaJsonParseError($"Could not find type to parse for discriminator {{value}}");
+        }}
         public override IActionResult Result {{ get => new ContentResult {{Content = Message, StatusCode = 400}}; }}
     }}
 }}

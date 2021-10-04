@@ -62,15 +62,15 @@ components:
             id:
               type: string
 
-    oneOfType:
+    anyUser:
       oneOf:
-        - $ref: "#/components/schemas/user"
         - $ref: "#/components/schemas/userWithId"
+        - $ref: "#/components/schemas/guestUser"
       discriminator:
         propertyName: type
         mapping:
-          simple: "#/components/schemas/user"
-          guest: "#/components/schemas/userWithId"
+          simple: "#/components/schemas/userWithId"
+          guest: "#/components/schemas/guestUser"
 
 
   responses:
@@ -137,7 +137,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/oneOfType"
+              $ref: "#/components/schemas/anyUser"
 
       responses:
         "200":
@@ -145,13 +145,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/userWithId"
+                $ref: "#/components/schemas/anyUser"
         "201":
           description: User was created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/userWithId"
+                $ref: "#/components/schemas/anyUser"
 
     patch:
       operationId: user-patch

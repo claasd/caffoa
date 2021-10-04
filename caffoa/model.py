@@ -14,15 +14,33 @@ class MemberData:
         self.enums = None
         self.is_basic_type = True
 
-
 class ModelData:
     def __init__(self, rawname: str, name: str):
         self.rawname = rawname
         self.name = name
+        self.description = None
+
+    @staticmethod
+    def is_interface() -> bool:
+        return False
+
+class ModelObjectData(ModelData):
+    def __init__(self, rawname: str, name: str):
+        super().__init__(rawname, name)
         self.parent = None
         self.properties = list()
         self.imports = list()
-        self.description = None
+        self.interfaces = list()
+
+class ModelInterfaceData(ModelData):
+    def __init__(self, rawname: str, name: str):
+        super().__init__(rawname, name)
+        self.children = list()
+        self.discriminator = None
+
+    @staticmethod
+    def is_interface() -> bool:
+        return True
 
 
 class EndPoint:

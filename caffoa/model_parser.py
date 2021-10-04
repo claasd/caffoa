@@ -20,7 +20,8 @@ class ModelParser:
     def parse(self, parser: ResolvingParser) -> List[ModelData]:
         schemas = parser.specification["components"]["schemas"]
         self.parse_simple_types(schemas)
-        return self.parse_objects(schemas)
+        objects = self.parse_objects(schemas)
+        return self.add_interfaces(objects)
 
     def parse_simple_types(self, schemas: dict):
         for class_name, schema in schemas.items():
@@ -41,11 +42,21 @@ class ModelParser:
                 continue
             if len(self.includes) > 0 and name not in self.includes:
                 continue
-            if "oneOf" in schema:
-                logging.warning(f"found oneOf in type {name}: will not be created as object!")
-                continue
             objects.append(ObjectParser(name, self.prefix, self.suffix, self.known_types).parse(schema))
         return objects
 
     def class_name(self, name):
         return self.prefix + to_camelcase(name) + self.suffix
+
+    def add_interfaces(self, objects: List[ModelData]) -> list:
+        interfaces = dict()
+        for item in objects:
+            if item.is_interface():
+                for child in item.children:
+                    if child not in interfaces:
+                        interfaces[child] = list()
+                    interfaces[child].append(item.name)
+        for item in objects:
+            if item.name in interfaces:
+                item.interfaces = interfaces[item.name]
+        return objects

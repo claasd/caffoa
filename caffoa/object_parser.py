@@ -3,7 +3,7 @@ import re
 from typing import Optional, Tuple
 
 from caffoa.converter import to_camelcase, parse_type, is_date
-from caffoa.model import ModelData, MemberData
+from caffoa.model import ModelData, MemberData, ModelObjectData, ModelInterfaceData
 
 
 class BaseObjectParser:
@@ -29,13 +29,19 @@ class ObjectParser(BaseObjectParser):
         super().__init__(prefix, suffix)
         self.name = raw_name
         self.known_types = known_types
-        self.result = ModelData(self.name, self.class_name(self.name))
+        self.result = ModelObjectData(self.name, self.class_name(self.name))
 
     def parse(self, schema: dict) -> ModelData:
         if "allOf" in schema:
             schema, self.result.parent = self.handle_all_of(schema)
-
-        if "properties" in schema:
+        if "oneOf" in schema:
+            self.result = ModelInterfaceData(self.name, self.class_name(self.name))
+            discriminator = schema.get("discriminator")
+            if discriminator:
+                self.result.discriminator = to_camelcase(discriminator["propertyName"])
+            for element in schema["oneOf"]:
+                self.result.children.append(self.class_name_from_ref(element["$ref"]))
+        elif "properties" in schema:
             required_props = schema.get('required', list())
             for name, data in schema["properties"].items():
                 self.result.properties.append(self.create_param(name, data, name in required_props))

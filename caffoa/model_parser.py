@@ -41,6 +41,9 @@ class ModelParser:
                 continue
             if len(self.includes) > 0 and name not in self.includes:
                 continue
+            if "oneOf" in schema:
+                logging.warning(f"found oneOf in type {name}: will not be created as object!")
+                continue
             objects.append(ObjectParser(name, self.prefix, self.suffix, self.known_types).parse(schema))
         return objects
 

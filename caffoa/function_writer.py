@@ -69,6 +69,7 @@ class FunctionWriter(BaseWriter):
             template_params["PARAM_NAMES"] = ", " + (", ".join(template_params["PARAM_NAMES"]))
         else:
             template_params["PARAM_NAMES"] = ""
+        template_params["CALL"] = template_params["CALL"].format_map(template_params)
         return self.method_template.format_map(template_params)
 
     def v1_params(self, endpoint: EndPoint) -> dict:
@@ -103,14 +104,8 @@ class FunctionWriter(BaseWriter):
     def v3_params(self, endpoint: EndPoint) -> dict:
         params = self.default_params(endpoint)
         type = get_response_type(endpoint)
-        params['VALUE'] = "var result = "
+        params['VALUE'] = f"var result = "
         filtered_body = BodyTypeFilter(self.request_body_filter).body_type(endpoint)
-        if endpoint.needs_content and filtered_body is not None:
-            params['PARAMS'].append(f"await ParseJson<{filtered_body}>(request.Body)")
-        elif endpoint.needs_content and endpoint.body is not None:
-            params['PARAMS'].append(f"await ParseJson<{endpoint.body}>(request.Body)")
-        elif endpoint.needs_content and self.use_factory:
-            params['PARAMS'].append("request.Body")
         if self.use_factory:
             params["FACTORY_CALL"] = "Instance(request)."
         else:
@@ -131,12 +126,44 @@ class FunctionWriter(BaseWriter):
             params['VALUE'] = "var code = "
         else:
             params['RESULT'] = f"new JsonResult(result) {{StatusCode = code}}"
-            params['VALUE'] = "var (result, code) = "
+            params['VALUE'] = f"var (result, code) = "
         error_infos = [f'("{param.name}", {param.name})' for param in
                        endpoint.parameters]
         if len(error_infos) > 0:
             params['ADDITIONAL_ERROR_INFOS'] = ", " + (", ".join(error_infos))
+
+        if endpoint.needs_content and filtered_body is not None:
+            params['PARAMS'].append(f"await ParseJson<{filtered_body}>(request.Body)")
+        elif endpoint.needs_content and endpoint.body is not None:
+            params['PARAMS'].append(f"await ParseJson<{endpoint.body.types[0]}>(request.Body)")
+        elif endpoint.needs_content and self.use_factory:
+            params['PARAMS'].append("request.Body")
+
+        if endpoint.needs_content and endpoint.body is not None and endpoint.body.is_selection():
+            params = self.v3_params_selection(endpoint, params)
         return params
+
+    def v3_params_selection(self, endpoint: EndPoint, template_params: dict) -> dict:
+        params = list(template_params["PARAMS"]).copy()
+        params.pop()
+        call_params = template_params.copy()
+        call_params["VALUE"] = ""
+        cases = list()
+        for value,typename in endpoint.body.mapping.items():
+            option_params = params.copy()
+            option_params.append(f"jObject.ToObject<{typename}>()")
+            call_params["PARAMS"] = ", ".join(option_params)
+            call = "await _service.{FACTORY_CALL}{NAME}({PARAMS})".format_map(call_params)
+            cases.append(f'"{value}" => {call}')
+        template = self.load_template("FunctionSwitchTemplate.cs")
+        template_params["CASES"] = ",\n\t\t\t\t\t".join(cases)
+        template_params["DISC"] = endpoint.body.discriminator
+        template_params["JSON_ERROR_CLASS"] = self.json_error_handling.get("class")
+        template_params["CALL"] = template.format_map(template_params)
+        return template_params
+
+
+
 
     @staticmethod
     def default_params(endpoint: EndPoint) -> dict:
@@ -153,7 +180,7 @@ class FunctionWriter(BaseWriter):
             RESULT="",
             VALUE="",
             FACTORY_CALL="",
-            CONVERT=""
+            CALL="{VALUE}await _service.{FACTORY_CALL}{NAME}({PARAMS});"
         )
 
     def write_errors(self, endpoints: List[EndPoint]):
@@ -202,6 +229,7 @@ class FunctionWriter(BaseWriter):
                                                                       CODE=code))
 
     def get_result_handler(self, result: MethodResult):
+        return "result"
         base = result.base
         is_array = False
         if base.startswith("IEnumerable<"):
@@ -212,3 +240,5 @@ class FunctionWriter(BaseWriter):
         if is_array:
             return f"result.Select(o=>o.To{base}())"
         return f"result.To{result.name}()"
+
+

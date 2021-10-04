@@ -26,7 +26,8 @@ class ModelData:
 
 
 class EndPoint:
-    def __init__(self, operation: str, name: str, path: str, method: str, parameters: list, documentation: list, needs_content: bool):
+    def __init__(self, operation: str, name: str, path: str, method: str, parameters: list, documentation: list,
+                 needs_content: bool):
         self.operation = operation
         self.name = name
         self.parameters = parameters
@@ -73,3 +74,13 @@ class MethodResult:
         self.code = 200
         self.codes = list()
         self.is_simple = True
+
+
+class BodyConfig:
+    def __init__(self, types: List[str]):
+        self.types = types
+        self.mapping = dict()
+        self.discriminator = ""
+
+    def is_selection(self):
+        return len(self.types) > 1

@@ -11,11 +11,14 @@ class BaseObjectParser:
         self.suffix = suffix
         self.prefix = prefix
 
-    def class_name_from_ref(self, param: str):
+    def name_from_ref(self, param: str):
         if ".yml_schemas_" in param:
             param = param.split(".yml_schemas_")[-1]
         name = param.split('/')[-1]
-        return self.class_name(name)
+        return name
+
+    def class_name_from_ref(self, param: str):
+        return self.class_name(self.name_from_ref(param))
 
     def class_name(self, name):
         return self.prefix + to_camelcase(name) + self.suffix

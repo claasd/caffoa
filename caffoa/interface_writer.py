@@ -28,7 +28,7 @@ class InterfaceWriter(BaseWriter):
         interfaces = []
         imports = ["System.Collections.Generic"]
         for ep in endpoints:
-            interfaces.append(self.format_endpoint(ep))
+            interfaces.extend(self.format_endpoints(ep))
             imports.extend(BodyTypeFilter(self.request_body_filter).additional_imports(ep))
         imports.extend(self.imports)
         imports_str = "".join([f"using {imp};\n" for imp in imports])
@@ -47,32 +47,45 @@ class InterfaceWriter(BaseWriter):
                 f.write(self.factory_interface_template.format(NAMESPACE=self.namespace,
                                                                CLASSNAME=self.interface_name))
 
-    def format_endpoint(self, endpoint: EndPoint):
-        params = [f"{param.type} {param.name}" for param in endpoint.parameters]
-        if endpoint.needs_content and self.version == 1:
-            params.append("HttpContent contentPayload")
-        elif self.version > 1:
-            filtered_body = BodyTypeFilter(self.request_body_filter).body_type(endpoint)
-            if endpoint.needs_content and filtered_body is not None:
-                params.append(f"{filtered_body} payload")
-            elif endpoint.needs_content and endpoint.body is not None:
-                params.append(f"{endpoint.body} payload")
-            elif endpoint.needs_content and self.use_factory:
+    def format_endpoints(self, endpoint: EndPoint) -> List[str]:
+        base_params = [f"{param.type} {param.name}" for param in endpoint.parameters]
+        if self.version == 1:
+            params = base_params.copy()
+            if endpoint.needs_content:
+                params.append("HttpContent contentPayload")
+            return [self.format_endpoint(endpoint, params, "")]
+
+        type = get_response_type(endpoint)
+        if type is None:
+            result = "<IActionResult>"
+        elif type.name is None:
+            result = ""
+        else:
+            result = f"<{type.name}>"
+        params = base_params.copy()
+        filtered_body = BodyTypeFilter(self.request_body_filter).body_type(endpoint)
+        if filtered_body:
+            params.append(f"{filtered_body} payload")
+            if not self.use_factory:
+                params.append("HttpRequest request")
+            return [self.format_endpoint(endpoint, params, result)]
+        if not endpoint.body:
+            if endpoint.needs_content and self.use_factory:
                 params.append(f"Stream stream")
             if not self.use_factory:
                 params.append("HttpRequest request")
+            return [self.format_endpoint(endpoint, params, result)]
+        interfaces = list()
+        for body in endpoint.body.types:
+            params = base_params.copy()
+            params.append(f"{body} payload")
+            if not self.use_factory:
+                params.append("HttpRequest request")
+            interfaces.append(self.format_endpoint(endpoint, params, result))
+        return interfaces
 
+    def format_endpoint(self, endpoint: EndPoint, params: list, result: str):
         formatted_params = ", ".join(params)
-        result = ""
-        if self.version > 2:
-            type = get_response_type(endpoint)
-            if type is None:
-                result = "<IActionResult>"
-            elif type.name is None:
-                result = ""
-            else:
-                result = f"<{type.name}>"
-
         return self.interface_method_template.format(NAME=endpoint.name,
                                                      PARAMS=formatted_params,
                                                      RESULT=result,

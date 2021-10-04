@@ -95,7 +95,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/userWithId"
+                  $ref: "#/components/schemas/anyUser"
         "400":
           $ref: "#/components/responses/error"
     post:

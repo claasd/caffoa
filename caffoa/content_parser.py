@@ -43,7 +43,6 @@ class ContentParser:
             config = BodyConfig(names)
             config.mapping = mapping
             config.discriminator = discriminator["propertyName"]
-            print(mapping)
             return config
 
         return BodyConfig([self.parse_element(schema)])

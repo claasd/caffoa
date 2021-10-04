@@ -48,10 +48,8 @@ class ModelWriter(BaseWriter):
         # remove duplicates but keep order:
         imports = list(dict.fromkeys(imports))
         all_parents = model.interfaces
-        print(all_parents)
         if model.parent:
             all_parents.insert(0,model.parent)
-            print(all_parents)
         parent = f" : {', '.join(all_parents)}" if all_parents else ""
         formatted_properties = []
         for prop in model.properties:

@@ -37,10 +37,11 @@ class FunctionWriter(BaseWriter):
         if self.version > 2:
             self.write_errors(endpoints)
             imports.append(self.error_namespace)
+            json_error_namespace = self.json_error_handling.get("namespace", self.error_namespace)
+            if json_error_namespace not in imports:
+                imports.append(json_error_namespace)
+
         json_error_class = self.json_error_handling["class"]
-        json_error_namespace = self.json_error_handling.get("namespace", self.error_namespace)
-        if json_error_namespace not in imports:
-            imports.append(json_error_namespace)
         function_endpoints = []
         for ep in endpoints:
             function_endpoints.append(self.format_endpoint(ep))

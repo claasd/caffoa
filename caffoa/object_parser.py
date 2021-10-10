@@ -176,7 +176,7 @@ class ObjectParser(BaseObjectParser):
         typename = parse_type(data, nullable and default_value == "null")
         return typename, default_value
 
-    def handle_enums(self, name: str, data: dict) -> Optional[str]:
+    def handle_enums(self, name: str, data: dict) -> Optional[dict]:
         if "enum" not in data:
             return None
         enum = data["enum"]
@@ -186,19 +186,12 @@ class ObjectParser(BaseObjectParser):
         if typename not in ["string", "int", "long", "double"]:
             return None
 
-        names = list()
-        lines = list()
+        enums = dict()
         for value in enum:
-            varname = to_camelcase(name) + to_camelcase(value) + "Value"
-            varname = re.sub(r"[^A-Za-z0-9]+", '_', varname)
-            names.append(varname)
+            name = value
+            name = re.sub(r"[^A-Za-z0-9]+", '_', name)
             if typename == "string":
                 value = f'"{value}"'
-            line = f"public const {typename} {varname} = {value};"
-            lines.append(line)
+            enums[value] = name
 
-        listname = "AllowedValuesFor" + to_camelcase(name)
-        values = ", ".join(names)
-        line = f"public static readonly ImmutableArray<{typename}> {listname} = new ImmutableArray<{typename}>() {{ {values} }};"
-        lines.append(line)
-        return "\n\t\t".join(lines)
+        return enums

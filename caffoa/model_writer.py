@@ -17,6 +17,7 @@ class ModelWriter(BaseWriter):
 
         self.model_template = self.load_template("ModelTemplate.cs")
         self.prop_template = self.load_template("ModelPropertyTemplate.cs")
+        self.enum_prop_template = self.load_template("ModelEnumPropertyTemplate.cs")
         self.interface_template = self.load_template("ModelInterfaceTemplate.cs")
 
     def write(self, models: List[ModelData]):
@@ -49,7 +50,7 @@ class ModelWriter(BaseWriter):
         imports = list(dict.fromkeys(imports))
         all_parents = model.interfaces
         if model.parent:
-            all_parents.insert(0,model.parent)
+            all_parents.insert(0, model.parent)
         parent = f" : {', '.join(all_parents)}" if all_parents else ""
         formatted_properties = []
         for prop in model.properties:
@@ -88,7 +89,6 @@ class ModelWriter(BaseWriter):
                 DESCRIPTION=description,
                 TYPE=model.discriminator))
 
-
     def format_property(self, property: MemberData) -> str:
         extra = ""
         if property.is_date:
@@ -109,18 +109,27 @@ class ModelWriter(BaseWriter):
             description = f"/// <summary>\n\t\t/// {description}\n\t\t/// </summary>\n\t\t"
 
         enums = ""
+        all_enums = None
+        template = self.prop_template
         if property.enums is not None:
-            enums = f"{property.enums}\n\n\t\t"
+            formatted_enums = {value: f"{to_camelcase(property.name)}{to_camelcase(name)}Value"
+                     for value, name in property.enums.items()}
+            enums = [f"public const {property.typename} {name} = {value};" for value, name in formatted_enums.items()]
+            enums = f"\n\n\t\t".join(enums)
+            all_enums = ", ".join(formatted_enums.values())
+            if property.default_value is not None:
+                default_str = " = " +formatted_enums.get(property.default_value, property.default_value) + ";"
+            template = self.enum_prop_template
 
-        return self.prop_template.format(TYPE=property.typename,
-                                         NAMELOWER=property.name,
-                                         NAMEUPPER=to_camelcase(property.name),
-                                         JSON_EXTRA=extra,
-                                         DEFAULT=default_str,
-                                         JSON_PROPERTY_EXTRA=json_property_extra,
-                                         DESCRIPTION=description,
-                                         ENUMS=enums)
-
+        return template.format(TYPE=property.typename,
+                               NAMELOWER=property.name,
+                               NAMEUPPER=to_camelcase(property.name),
+                               JSON_EXTRA=extra,
+                               DEFAULT=default_str,
+                               JSON_PROPERTY_EXTRA=json_property_extra,
+                               DESCRIPTION=description,
+                               ENUMS=enums,
+                               ENUM_NAMES=all_enums)
 
     def format_updater(self, model: ModelData) -> str:
         props_update = []
@@ -139,7 +148,6 @@ class ModelWriter(BaseWriter):
         if model.parent:
             formatted = f"UpdateWith{model.parent}(other);\n\t\t\t{formatted}"
         return formatted
-
 
     def write_custom_date_converter(self):
         template = self.load_template("DateSerializer.cs")

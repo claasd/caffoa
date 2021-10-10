@@ -152,7 +152,7 @@ class FunctionWriter(BaseWriter):
         cases = list()
         for value,typename in endpoint.body.mapping.items():
             option_params = params.copy()
-            option_params.append(f"jObject.ToObject<{typename}>()")
+            option_params.append(f"ToObject<{typename}>(jObject)")
             call_params["PARAMS"] = ", ".join(option_params)
             call = "await _service.{FACTORY_CALL}{NAME}({PARAMS})".format_map(call_params)
             cases.append(f'"{value}" => {call}')

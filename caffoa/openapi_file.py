@@ -57,6 +57,10 @@ class OpenApiFile:
         model = parser.parse(self.model_parser())
         writer = ModelWriter(self.version, config["namespace"], config["targetFolder"])
         writer.additional_imports.extend(config.get("imports", self.base_config.get('imports', list())))
+        writer.enum_name = self.get_config(config, "enumName", writer.enum_name)
+        writer.enum_list_name = self.get_config(config, "enumListName", writer.enum_list_name)
+        writer.check_enums = self.get_config(config, "checkEnums", writer.check_enums)
+
         writer.write(model)
         self.imports.append(writer.namespace)
         self.known_types = parser.known_types

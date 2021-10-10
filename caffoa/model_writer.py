@@ -19,6 +19,9 @@ class ModelWriter(BaseWriter):
         self.prop_template = self.load_template("ModelPropertyTemplate.cs")
         self.enum_prop_template = self.load_template("ModelEnumPropertyTemplate.cs")
         self.interface_template = self.load_template("ModelInterfaceTemplate.cs")
+        self.enum_name = "{uFieldName}{uValueName}Value"
+        self.enum_list_name = "AllowedValuesFor{uFieldName}"
+        self.check_enums = True if version > 2 else False
 
     def write(self, models: List[ModelData]):
         os.makedirs(self.output_folder, exist_ok=True)
@@ -108,28 +111,37 @@ class ModelWriter(BaseWriter):
             description = property.description.strip().replace("\n", "\n\t\t/// ")
             description = f"/// <summary>\n\t\t/// {description}\n\t\t/// </summary>\n\t\t"
 
-        enums = ""
-        all_enums = None
-        template = self.prop_template
+        template_data = dict(TYPE=property.typename,
+                             NAMELOWER=property.name,
+                             NAMEUPPER=to_camelcase(property.name),
+                             JSON_EXTRA=extra,
+                             DEFAULT=default_str,
+                             JSON_PROPERTY_EXTRA=json_property_extra,
+                             DESCRIPTION=description)
+
         if property.enums is not None:
-            formatted_enums = {value: f"{to_camelcase(property.name)}{to_camelcase(name)}Value"
-                     for value, name in property.enums.items()}
+            formatted_enums = {value: self.format_enum_value(property.name, name)
+                               for value, name in property.enums.items()}
             enums = [f"public const {property.typename} {name} = {value};" for value, name in formatted_enums.items()]
             enums = f"\n\n\t\t".join(enums)
             all_enums = ", ".join(formatted_enums.values())
             if property.default_value is not None:
-                default_str = " = " +formatted_enums.get(property.default_value, property.default_value) + ";"
+                template_data["DEFAULT"] = " = " + formatted_enums.get(property.default_value, property.default_value) + ";"
+            enum_list_name = self.enum_list_name.format(uFieldName=to_camelcase(property.name),
+                                                        lFieldName=property.name)
             template = self.enum_prop_template
+            template_data['ENUMS'] = enums
+            template_data['ENUM_NAMES'] = all_enums
+            template_data['ENUM_LIST_NAME'] = enum_list_name
+            if self.check_enums:
+                template_data['ENUM_CHECK'] = f'if(!{enum_list_name}.Contains(value))\n\t\t\t\t\tthrow new ArgumentOutOfRangeException("{to_camelcase(property.name)}", $"{{value}} is not allowed. Allowed values: {{{enum_list_name}}}");'
+            else:
+                template_data['ENUM_CHECK'] = "// set checkEnums=true in config file to have a value check here"
 
-        return template.format(TYPE=property.typename,
-                               NAMELOWER=property.name,
-                               NAMEUPPER=to_camelcase(property.name),
-                               JSON_EXTRA=extra,
-                               DEFAULT=default_str,
-                               JSON_PROPERTY_EXTRA=json_property_extra,
-                               DESCRIPTION=description,
-                               ENUMS=enums,
-                               ENUM_NAMES=all_enums)
+        else:
+            template = self.prop_template
+
+        return template.format_map(template_data)
 
     def format_updater(self, model: ModelData) -> str:
         props_update = []
@@ -155,3 +167,11 @@ class ModelWriter(BaseWriter):
         logging.info(f"Writing CustomJsonDateConverter -> {file_name}")
         with open(file_name, "w", encoding="utf-8") as f:
             f.write(template.format(NAMESPACE=self.namespace))
+
+    def format_enum_value(self, typename: str, valuename: str):
+        return self.enum_name.format(
+            lFieldName=typename,
+            uFieldName=to_camelcase(typename),
+            lValueName=valuename,
+            uValueName=to_camelcase(valuename)
+        )

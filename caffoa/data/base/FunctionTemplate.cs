@@ -37,6 +37,15 @@ namespace {NAMESPACE}
             }}
         }}
 
+        public T ToObject<T>(JObject jObject)
+        {{
+            try {{
+                return jObject.ToObject<T>();
+            }} catch (Exception e) {{
+                throw {JSON_ERROR_CLASS}.FromException(e);
+            }}
+        }}
+
         public void LogException(Exception e, HttpRequest request, string functionName, string route, string operation,
             params (string, object)[] namedParams)
         {{

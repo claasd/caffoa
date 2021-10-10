@@ -1,5 +1,7 @@
+using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+
 {IMPORTS}
 namespace {NAMESPACE} {{
     {DESCRIPTION}[JsonObject(MemberSerialization.OptIn)]

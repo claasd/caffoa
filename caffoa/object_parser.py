@@ -119,6 +119,7 @@ class ObjectParser(BaseObjectParser):
             if param.enums and None in param.enums.keys():
                 param.typename, param.default_value = self.handle_default_type(data, True)
             if param.enums is not None:
+                self.result.imports.append("System")
                 self.result.imports.append("System.Collections.Immutable")
             param.is_date = is_date(data)
         return param

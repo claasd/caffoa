@@ -116,6 +116,8 @@ class ObjectParser(BaseObjectParser):
         else:
             param.typename, param.default_value = self.handle_default_type(data, param.nullable)
             param.enums = self.handle_enums(name, data)
+            if param.enums and None in param.enums.keys():
+                param.typename, param.default_value = self.handle_default_type(data, True)
             if param.enums is not None:
                 self.result.imports.append("System.Collections.Immutable")
             param.is_date = is_date(data)
@@ -189,7 +191,7 @@ class ObjectParser(BaseObjectParser):
         enums = dict()
         for value in enum:
             name = value
-            name = re.sub(r"[^A-Za-z0-9]+", '_', name)
+            name = re.sub(r"[^A-Za-z0-9]+", '_', str(name))
             if typename == "string":
                 value = f'"{value}"'
             enums[value] = name

@@ -121,12 +121,14 @@ class ModelWriter(BaseWriter):
 
         if property.enums is not None:
             formatted_enums = {value: self.format_enum_value(property.name, name)
-                               for value, name in property.enums.items()}
-            enums = [f"public const {property.typename} {name} = {value};" for value, name in formatted_enums.items()]
-            enums = f"\n\n\t\t".join(enums)
+                               for value, name in property.enums.items() if value is not None}
+            enums = [f"public const {property.typename.rstrip('?')} {name} = {value};" for value, name in formatted_enums.items()]
+            enums = f"\n\t\t".join(enums)
             all_enums = ", ".join(formatted_enums.values())
+            if None in property.enums.keys():
+                all_enums += ", null"
             if property.default_value is not None:
-                template_data["DEFAULT"] = " = " + formatted_enums.get(property.default_value, property.default_value) + ";"
+                template_data["DEFAULT"] = " = " + formatted_enums.get(property.default_value, property.default_value)
             enum_list_name = self.enum_list_name.format(uFieldName=to_camelcase(property.name),
                                                         lFieldName=property.name)
             template = self.enum_prop_template
@@ -173,5 +175,5 @@ class ModelWriter(BaseWriter):
             lFieldName=typename,
             uFieldName=to_camelcase(typename),
             lValueName=valuename,
-            uValueName=to_camelcase(valuename)
+            uValueName=valuename if valuename[0].isnumeric() else to_camelcase(valuename)
         )

@@ -8,7 +8,7 @@
             = new ImmutableArray<{TYPE}>() {{ {ENUM_NAMES} }};
 
         [JsonIgnore]
-        private {TYPE} _{NAMELOWER}{DEFAULT}
+        private {TYPE} _{NAMELOWER}{DEFAULT};
 
         {DESCRIPTION}{JSON_EXTRA}[JsonProperty("{NAMELOWER}"{JSON_PROPERTY_EXTRA})]
         public virtual {TYPE} {NAMEUPPER} {{

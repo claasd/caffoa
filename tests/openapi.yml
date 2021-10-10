@@ -38,6 +38,10 @@ components:
           type: string
           enum: [simple]
           default: simple
+        ageGroup:
+          type: number
+          format: integer
+          enum: [18,40,70,120]
 
       required:
         - type
@@ -72,6 +76,16 @@ components:
           simple: "#/components/schemas/userWithId"
           guest: "#/components/schemas/guestUser"
 
+    pricing:
+      type: object
+      properties:
+        price:
+          type: number
+          enum:
+            - 32.99
+            - 33.99
+            - 44.99
+            - null
 
   responses:
     error:

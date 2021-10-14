@@ -40,7 +40,12 @@ class ObjectParser(BaseObjectParser):
             if discriminator:
                 self.result.discriminator = to_camelcase(discriminator["propertyName"])
             for element in schema["oneOf"]:
-                self.result.children.append(self.class_name_from_ref(element["$ref"]))
+                if "$ref" in element:
+                    self.result.children.append(self.class_name_from_ref(element["$ref"]))
+                elif "required" in element:
+                    pass # this is fine: https://github.com/p1c2u/openapi-spec-validator/issues/27
+                else:
+                    logging.warning("did not find $ref as child of oneOf")
         elif "properties" in schema:
             required_props = schema.get('required', list())
             for name, data in schema["properties"].items():

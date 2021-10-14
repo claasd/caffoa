@@ -107,10 +107,6 @@ class FunctionWriter(BaseWriter):
         type = get_response_type(endpoint)
         params['VALUE'] = f"var result = "
         filtered_body = BodyTypeFilter(self.request_body_filter).body_type(endpoint)
-        if self.use_factory:
-            params["FACTORY_CALL"] = "Instance(request)."
-        else:
-            params['PARAMS'].append("request")
 
         if type is None:
             params['RESULT'] = "result"
@@ -133,26 +129,32 @@ class FunctionWriter(BaseWriter):
         if len(error_infos) > 0:
             params['ADDITIONAL_ERROR_INFOS'] = ", " + (", ".join(error_infos))
 
-        if endpoint.needs_content and filtered_body is not None:
+        if endpoint.needs_content and endpoint.body is not None and endpoint.body.is_selection():
+            params = self.v3_params_selection(endpoint, params)
+        elif endpoint.needs_content and filtered_body is not None:
             params['PARAMS'].append(f"await ParseJson<{filtered_body}>(request.Body)")
         elif endpoint.needs_content and endpoint.body is not None:
             params['PARAMS'].append(f"await ParseJson<{endpoint.body.types[0]}>(request.Body)")
         elif endpoint.needs_content and self.use_factory:
             params['PARAMS'].append("request.Body")
 
-        if endpoint.needs_content and endpoint.body is not None and endpoint.body.is_selection():
-            params = self.v3_params_selection(endpoint, params)
+        if self.use_factory:
+            params["FACTORY_CALL"] = "Instance(request)."
+        else:
+            params['PARAMS'].append("request")
+
         return params
 
     def v3_params_selection(self, endpoint: EndPoint, template_params: dict) -> dict:
         params = list(template_params["PARAMS"]).copy()
-        params.pop()
         call_params = template_params.copy()
         call_params["VALUE"] = ""
         cases = list()
         for value,typename in endpoint.body.mapping.items():
             option_params = params.copy()
             option_params.append(f"ToObject<{typename}>(jObject)")
+            if not self.use_factory:
+                option_params.append(f"request")
             call_params["PARAMS"] = ", ".join(option_params)
             call = "await _service.{FACTORY_CALL}{NAME}({PARAMS})".format_map(call_params)
             cases.append(f'"{value}" => {call}')

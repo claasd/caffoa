@@ -22,5 +22,5 @@ services:
       errorNamespace: My.Errors
       errorFolder:  ./output/v3/My/Errors
       name: Foo3
-      useFactory: on
+      useFactory: off
 

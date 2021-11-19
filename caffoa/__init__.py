@@ -1,4 +1,7 @@
 import argparse
+import glob
+import logging
+import os
 
 import yaml
 
@@ -25,6 +28,14 @@ def execute():
         settings = dict()
     version = settings.get("version", 1)
     duplication_handler.init(settings.get("duplicates", "overwrite"))
+
+    if settings.get('clearGeneratedFiles', False):
+        old_files = glob.glob('**/*.generated.cs', recursive=True)
+        for file in old_files:
+            logging.info(f"Removing {file}")
+            os.unlink(file)
+
+
     for number, config in enumerate(services):
         if not "apiPath" in config:
             raise Warning(f"apiPath is required for service #{number}")

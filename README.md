@@ -64,6 +64,7 @@ The file will contain a shared class, with all properties of the schema. You can
 There are multiple optional configuration options that you can use:
 ```yaml
 config:
+  clearGeneratedFiles: true # default is false, removes all files below the working directory, that end in .generated.cs
   version: 2 # 1 (legacy, default), 2 (current), 3 (experimental) 
   useFactory: false # version 2+ if set to true, a factory interface is created additionally to the Service interface. Useful if you need to have different behaviors based on headers.
   prefix: "Pre" # A prefix that is added to all model classes

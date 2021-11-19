@@ -12,6 +12,8 @@ config:
           - patch
 services:
   - apiPath: tests\openapi.yml
+    config:
+      prefix: Pre
     model:
       namespace: My.Model3
       targetFolder: ./output/v3/Model

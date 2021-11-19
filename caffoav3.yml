@@ -1,6 +1,8 @@
 config:
+  clearGeneratedFiles: true
   duplicates: once # once, overwrite (default)
   version: 3 # 1 (old, partial classes, HttpResponseMessage) 2 : (new, Injection, IActionResult)
+  routePrefix: api/
   requestBodyType: # overwrite the JSON type that is passed to the method for some operations
     - type: JObject
       filter: # the type is overwritten if one of the filters match
@@ -14,13 +16,9 @@ services:
       namespace: My.Model3
       targetFolder: ./output/v3/Model
     function:
-#      jsonErrorHandling:
-#        class: ErrorClientError
-#        namespace: My.Errors
       targetFolder: output/v3
       namespace: Foo3
       errorNamespace: My.Errors
       errorFolder:  ./output/v3/My/Errors
       name: Foo3
       useFactory: off
-

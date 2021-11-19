@@ -1,6 +1,7 @@
 config:
   duplicates: once # once, overwrite (default)
   version: 2 # 1 (old, partial classes, HttpResponseMessage) 2 : (new, Injection, IActionResult)
+  routePrefix: prefix/
 services:
   - apiPath: tests\openapi.yml
     model:

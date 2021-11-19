@@ -98,6 +98,7 @@ class OpenApiFile:
 
         writer = FunctionWriter(self.version, name, namespace, target_folder, iwriter.interface_name)
         writer.use_factory = self.get_config(config, 'useFactory', writer.use_factory)
+        writer.route_prefix = self.get_config(config, 'routePrefix', writer.route_prefix)
         writer.boilerplate = self.get_config(config, 'boilerplate', writer.boilerplate)
         writer.functions_name = self.get_config(config, 'functionsName', writer.functions_name)
         writer.error_namespace = self.get_config(config, "errorNamespace", writer.error_namespace)

@@ -24,6 +24,7 @@ class FunctionWriter(BaseWriter):
         self.error_namespace = namespace + ".Errors"
         self.request_body_filter = list()
         self.imports = list()
+        self.route_prefix = ''
         self.method_template = self.load_template("FunctionMethod.cs")
         self.class_template = self.load_template("FunctionTemplate.cs")
         self.caffoa_error_template = self.load_template("CaffoaClientError.cs")
@@ -168,14 +169,13 @@ class FunctionWriter(BaseWriter):
 
 
 
-    @staticmethod
-    def default_params(endpoint: EndPoint) -> dict:
+    def default_params(self, endpoint: EndPoint) -> dict:
         extra_error_info = [f'debugInformation["p_{param.name}"] = {param.name}.ToString();\n\t\t\t\t' for param in
                             endpoint.parameters]
         return dict(
             NAME=endpoint.name,
             OPERATION=endpoint.method,
-            PATH=endpoint.path,
+            PATH=self.route_prefix + endpoint.path,
             PARAMS=[param.name for param in endpoint.parameters],
             PARAM_NAMES=[f"{param.type} {param.name}" for param in endpoint.parameters],
             ADDITIONAL_ERROR_INFOS="".join(extra_error_info),

@@ -1,10 +1,10 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using DemoV3.Errors;
-using DemoV3.Model;
+using DemoV2.Errors;
+using DemoV2.Model;
 
-namespace DemoV3.Services
+namespace DemoV2.Services
 {
     public class UserRepository<T> where T : AnyUser
     {

@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Demov3.Errors;
 using DemoV3.Errors;
 using DemoV3.Model;
 using Microsoft.AspNetCore.Http;
@@ -19,6 +17,7 @@ namespace DemoV3.Services
         {
             return this;
         }
+        
         public async Task<IEnumerable<AnyCompleteUser>> UsersGetAsync()
         {
             var result = new List<AnyCompleteUser>();

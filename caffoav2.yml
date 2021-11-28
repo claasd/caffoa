@@ -5,11 +5,17 @@ config:
 services:
   - apiPath: tests\openapi.yml
     model:
-      namespace: My.Model2
-      targetFolder: ./output/v2/Model
+      namespace: DemoV2.Model
+      targetFolder: ./demo/DemoV2/Model
     function:
-      targetFolder: output/v2
-      namespace: Foo2
-      name: Foo2
-      useFactory: off
-
+      targetFolder: demo/DemoV2
+      namespace: DemoV2
+      name: DemoV2
+      imports:
+        - DemoV2.Errors
+      boilerplate: |
+        try {
+          {BASE}
+        } catch(BaseError e) {
+          return e.Result;
+        }

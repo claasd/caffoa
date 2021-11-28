@@ -1,0 +1,77 @@
+config:
+  duplicates: once # once, overwrite (default)
+  version: 3
+  useFactory: on
+  prefix: Base
+  errorNamespace: UserManagement.Common.ClientErrors
+  errorFolder: output/test/UserManagement.Common/ClientErrors
+services:
+  - apiPath: ../../beenic/service-user-management/apis/user-management.openapi.yml
+    model:
+      namespace: DataBackend.TariffCache.Model
+      targetFolder: output/test/DataBackend.TariffCache/Model
+      includes:
+        - tariffAdvancePayment
+        - tariffBasePrice
+  - apiPath: ../../beenic/service-user-management/apis/b2b.user-management.openapi.yml
+    function:
+      namespace: B2BService
+      name: B2BManagement
+      targetFolder: output/test/B2BService
+
+    model:
+      namespace: UserManagement.Common.Model.Base
+      targetFolder: output/test/UserManagement.Common/Model/Base
+      imports:
+      - DataBackend.TariffCache.Model
+
+  - apiPath: ../../beenic/service-user-management/apis/user-management.openapi.yml
+    function:
+      namespace: UserService
+      name: UserManagement
+      targetFolder: output/test/UserService
+    model:
+      namespace: UserManagement.Common.Model.Base
+      targetFolder: output/test/UserManagement.Common/Model/Base
+
+
+  - apiPath: ../../beenic/service-user-management/apis/legacy.openapi.yml
+    function:
+      namespace: LegacyService
+      name: LegacyUser
+      targetFolder: output/test/LegacyService
+
+  - apiPath: ../../beenic/service-user-management/apis/legacy-ds.openapi.yml
+    function:
+      namespace: LegacyService
+      name: LegacyDataScience
+      targetFolder: output/test/LegacyService
+
+
+  - apiPath: ../../beenic/service-user-management/apis/ds.user-management.openapi.yml
+    config:
+      prefix: Ds
+    function:
+      namespace: DataScienceService
+      name: DataScience
+      targetFolder: output/test/DataScienceService
+    model:
+      namespace: DataScienceService.Model
+      targetFolder: output/test/DataScienceService/Model
+
+
+  - apiPath: ../../beenic/service-user-management/apis/internal-onboarding.yml
+    model:
+      namespace: DataBackend.SensorOnboarding.Model
+      targetFolder: output/test/DataBackend.SensorOnboarding/Model
+
+  - apiPath: ../../beenic/service-user-management/apis/b2b-fresh.openapi.yml
+    config:
+      prefix: Fresh
+    function:
+      namespace: B2BFreshService
+      name: B2BFreshManagement
+      targetFolder: output/test/B2BFreshService
+    model:
+      namespace: B2BFreshService.Model
+      targetFolder: output/test/B2BFreshService/Model/

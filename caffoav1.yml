@@ -4,11 +4,17 @@ config:
 services:
   - apiPath: tests\openapi.yml
     model:
-      namespace: My.Model
-      targetFolder: ./output/v1/Model
+      namespace: DemoV1.Model
+      targetFolder: ./demo/DemoV1/Model
     function:
-      routePrefix: internal/
-      targetFolder: output/v1
-      namespace: Foo
-      name: Foo
-
+      targetFolder: demo/DemoV1
+      namespace: DemoV1
+      name: DemoV1
+      imports:
+        - DemoV1.Errors
+      boilerplate: |
+        try {
+          {BASE}
+        } catch(BaseError e) {
+          return e.Result;
+        }

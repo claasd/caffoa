@@ -30,6 +30,7 @@ components:
         birthdate:
           type: string
           format: date
+          nullable: true
         emails:
           type: array
           items:

@@ -19,7 +19,6 @@ namespace {NAMESPACE} {{
         public void UpdateWith{NAME}({NAME} other) {{
             try {{
                 {UPDATEPROPS}
-
             }} catch({JSON_ERROR_CLASS}) {{
                 throw;
             }} catch(Exception e) {{

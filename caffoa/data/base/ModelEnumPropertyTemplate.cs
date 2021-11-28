@@ -4,7 +4,7 @@
         /// <summary>
         /// immutable array containing all allowed values for "{NAMELOWER}"
         /// </summary>
-        public readonly ImmutableArray<{TYPE}> {ENUM_LIST_NAME} = ImmutableArray.Create({ENUM_NAMES});
+        public static readonly ImmutableArray<{TYPE}> {ENUM_LIST_NAME} = ImmutableArray.Create({ENUM_NAMES});
 
         [JsonIgnore]
         private {TYPE} _{NAMELOWER}{DEFAULT};

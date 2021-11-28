@@ -26,9 +26,11 @@ namespace {NAMESPACE}
             return new CaffoaJsonParseError(err.GetType().Name + ": " + err.Message);
         }}
 
-        public static Exception WrongContent(string type, object value)
+        public static Exception WrongContent(string type, object value, string[] allowedValues)
         {{
-            return new CaffoaJsonParseError($"Could not find type to parse for discriminator {{value}}");
+            var allowedValuesString = string.Join(", ", allowedValues);
+            var valueString = value == null ? "<null>" : value.ToString();
+            return new CaffoaJsonParseError($"Could not find correct value to parse for discriminator '{{type}}'. Must be one of [{{allowedValuesString}}], not '{{valueString}}'");
         }}
         public override IActionResult Result {{ get => new ContentResult {{Content = Message, StatusCode = 400}}; }}
     }}

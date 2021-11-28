@@ -76,7 +76,6 @@ class ModelWriter(BaseWriter):
             model_description = model.description.strip().replace("\n", "\n\t/// ")
             description += f"/// <summary>\n\t/// {model_description}\n\t/// </summary>\n\t"
 
-
         with open(file_name, "w", encoding="utf-8") as f:
             f.write(self.model_template.format(NAMESPACE=self.namespace,
                                                JSON_ERROR_CLASS=self.json_error_handling['class'],
@@ -127,12 +126,15 @@ class ModelWriter(BaseWriter):
                              JSON_EXTRA=extra,
                              DEFAULT=default_str,
                              JSON_PROPERTY_EXTRA=json_property_extra,
-                             DESCRIPTION=description)
+                             DESCRIPTION=description,
+                             NO_CHECK="",
+                             NO_CHECK_MSG="")
 
         if property.enums is not None:
             formatted_enums = {value: self.format_enum_value(property.name, name)
                                for value, name in property.enums.items() if value is not None}
-            enums = [f"public const {property.typename.rstrip('?')} {name} = {value};" for value, name in formatted_enums.items()]
+            enums = [f"public const {property.typename.rstrip('?')} {name} = {value};" for value, name in
+                     formatted_enums.items()]
             enums = f"\n\t\t".join(enums)
             all_enums = ", ".join(formatted_enums.values())
             if None in property.enums.keys():
@@ -147,7 +149,9 @@ class ModelWriter(BaseWriter):
             template_data['ENUM_LIST_NAME'] = enum_list_name
             if not self.check_enums:
                 template_data["NO_CHECK"] = "// "
-                template_data['NO_CHECK_MSG'] = "// set checkEnums=true in config file to have a value check here //\n\t\t\t\t"
+                template_data[
+                    'NO_CHECK_MSG'] = "// set checkEnums=true in config file to have a value check here //\n\t\t\t\t"
+
 
         else:
             template = self.prop_template

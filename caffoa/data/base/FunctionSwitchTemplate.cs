@@ -3,5 +3,5 @@ var jObject = await ParseJson<JObject>(request.Body);
                 {VALUE} discriminator switch
                 {{{{
                     {CASES},
-                    _ => throw {JSON_ERROR_CLASS}.WrongContent("{DISC}", discriminator)
+                    _ => throw {JSON_ERROR_CLASS}.WrongContent("{DISC}", discriminator, new [] {{{{ {CASES_ALLOWED_VALUES} }}}})
                 }}}};

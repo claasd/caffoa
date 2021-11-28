@@ -149,6 +149,7 @@ class FunctionWriter(BaseWriter):
         call_params = template_params.copy()
         call_params["VALUE"] = ""
         cases = list()
+        allowed_values = list()
         for value,typename in endpoint.body.mapping.items():
             option_params = params.copy()
             option_params.append(f"ToObject<{typename}>(jObject)")
@@ -157,8 +158,10 @@ class FunctionWriter(BaseWriter):
             call_params["PARAMS"] = ", ".join(option_params)
             call = "await _service.{FACTORY_CALL}{NAME}({PARAMS})".format_map(call_params)
             cases.append(f'"{value}" => {call}')
+            allowed_values.append(f'"{value}"')
         template = self.load_template("FunctionSwitchTemplate.cs")
         template_params["CASES"] = ",\n\t\t\t\t\t".join(cases)
+        template_params["CASES_ALLOWED_VALUES"] = ", ".join(allowed_values)
         template_params["DISC"] = endpoint.body.discriminator
         template_params["JSON_ERROR_CLASS"] = self.json_error_handling.get("class")
         template_params["CALL"] = template.format_map(template_params)

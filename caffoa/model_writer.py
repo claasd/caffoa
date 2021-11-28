@@ -171,9 +171,13 @@ class ModelWriter(BaseWriter):
                 if prop.nullable:
                     special_call = "?" + special_call
             props_update.append(f"{name} = other.{name}{special_call};")
-        formatted = "\n\t\t\t".join(props_update)
+        if self.version >= 3:
+            splitter = "\n\t\t\t\t"
+        else:
+            splitter = "\n\t\t\t"
+        formatted = splitter.join(props_update)
         if model.parent:
-            formatted = f"UpdateWith{model.parent}(other);\n\t\t\t{formatted}"
+            formatted = f"UpdateWith{model.parent}(other);{splitter}{formatted}"
         return formatted
 
     def write_custom_date_converter(self):

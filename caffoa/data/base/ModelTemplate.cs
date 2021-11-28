@@ -19,6 +19,9 @@ namespace {NAMESPACE} {{
         public void UpdateWith{NAME}({NAME} other) {{
             try {{
                 {UPDATEPROPS}
+
+            }} catch({JSON_ERROR_CLASS}) {{
+                throw;
             }} catch(Exception e) {{
                 throw {JSON_ERROR_CLASS}.FromException(e);
             }}
@@ -47,7 +50,7 @@ namespace {NAMESPACE} {{
             try {{
                 UpdateWith{NAME}(sourceObject.ToObject<{NAME}>());
             }}
-            catch(CaffoaClientError) {{
+            catch({JSON_ERROR_CLASS}) {{
                 throw;
             }}
             catch(Exception e) {{

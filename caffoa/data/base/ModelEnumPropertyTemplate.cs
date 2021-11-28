@@ -15,12 +15,12 @@
                 return _{NAMELOWER};
             }}
             set {{
-                if (!{ENUM_LIST_NAME}.Contains(value))
-                {{
-                    var allowedValues = string.Join(", ", {ENUM_LIST_NAME}.Select(v=>v == null ? "null" : v.ToString()));
-                    throw new ArgumentOutOfRangeException("{NAMELOWER}",
-                        $"{{value}} is not allowed. Allowed values: [{{allowedValues}}]");
-                }}
+                {NO_CHECK_MSG}{NO_CHECK}if (!{ENUM_LIST_NAME}.Contains(value))
+                {NO_CHECK}{{
+                {NO_CHECK}    var allowedValues = string.Join(", ", {ENUM_LIST_NAME}.Select(v=>v == null ? "null" : v.ToString()));
+                {NO_CHECK}    throw new ArgumentOutOfRangeException("{NAMELOWER}",
+                {NO_CHECK}        $"{{value}} is not allowed. Allowed values: [{{allowedValues}}]");
+                {NO_CHECK}}}
                 _{NAMELOWER} = value;
             }}
         }}

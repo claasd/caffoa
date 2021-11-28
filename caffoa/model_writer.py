@@ -145,12 +145,9 @@ class ModelWriter(BaseWriter):
             template_data['ENUMS'] = enums
             template_data['ENUM_NAMES'] = all_enums
             template_data['ENUM_LIST_NAME'] = enum_list_name
-            if self.check_enums:
-                check = f'if(!{enum_list_name}.Contains(value))\n\t\t\t\t{{\n'
-                check += f'\t\t\t\t\t \n\t\t\t\t\t{{'
-                template_data['ENUM_CHECK'] = f'\t\t\t\t\tthrow new ArgumentOutOfRangeException("{to_camelcase(property.name)}", $"{{value}} is not allowed. Allowed values: {{{enum_list_name}}}");'
-            else:
-                template_data['ENUM_CHECK'] = "// set checkEnums=true in config file to have a value check here"
+            if not self.check_enums:
+                template_data["NO_CHECK"] = "// "
+                template_data['NO_CHECK_MSG'] = "// set checkEnums=true in config file to have a value check here //\n\t\t\t\t"
 
         else:
             template = self.prop_template

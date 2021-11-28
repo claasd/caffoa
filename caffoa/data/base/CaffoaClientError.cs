@@ -21,6 +21,8 @@ namespace {NAMESPACE}
 
         public static CaffoaJsonParseError FromException(Exception err)
         {{
+            while (err.InnerException != null)
+                err = err.InnerException;
             return new CaffoaJsonParseError(err.GetType().Name + ": " + err.Message);
         }}
 

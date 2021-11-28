@@ -126,6 +126,7 @@ class ObjectParser(BaseObjectParser):
             if param.enums is not None:
                 self.result.imports.append("System")
                 self.result.imports.append("System.Collections.Immutable")
+                self.result.imports.append("System.Linq")
             param.is_date = is_date(data)
         return param
 

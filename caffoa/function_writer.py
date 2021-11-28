@@ -17,7 +17,7 @@ class FunctionWriter(BaseWriter):
         self.target_folder = target_folder
         self.namespace = namespace
         self.boilerplate = "{BASE}"
-        self.use_factory = False
+        self.use_factory = True if version >= 3 else False
         self.json_error_handling = {"class": "CaffoaJsonParseError"}
         self.functions_name = f"{name}Functions"
         self.error_folder = os.path.join(target_folder, "Errors")
@@ -46,7 +46,7 @@ class FunctionWriter(BaseWriter):
         function_endpoints = []
         for ep in endpoints:
             function_endpoints.append(self.format_endpoint(ep))
-            imports.extend(BodyTypeFilter(self.request_body_filter).additional_imports(ep))
+#            imports.extend(BodyTypeFilter(self.request_body_filter).additional_imports(ep))
         interface_name = self.interface_name + "Factory" if self.version > 1 and self.use_factory else self.interface_name
         imports = [f"using {x};\n" for x in imports]
         file_name = os.path.abspath(f"{self.target_folder}/{self.functions_name}.generated.cs")
@@ -129,7 +129,8 @@ class FunctionWriter(BaseWriter):
                        endpoint.parameters]
         if len(error_infos) > 0:
             params['ADDITIONAL_ERROR_INFOS'] = ", " + (", ".join(error_infos))
-
+        if self.use_factory:
+            params["FACTORY_CALL"] = "Instance(request)."
         if endpoint.needs_content and endpoint.body is not None and endpoint.body.is_selection():
             params = self.v3_params_selection(endpoint, params)
         elif endpoint.needs_content and filtered_body is not None:
@@ -138,10 +139,7 @@ class FunctionWriter(BaseWriter):
             params['PARAMS'].append(f"await ParseJson<{endpoint.body.types[0]}>(request.Body)")
         elif endpoint.needs_content and self.use_factory:
             params['PARAMS'].append("request.Body")
-
-        if self.use_factory:
-            params["FACTORY_CALL"] = "Instance(request)."
-        else:
+        if not self.use_factory:
             params['PARAMS'].append("request")
 
         return params

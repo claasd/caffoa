@@ -3,6 +3,7 @@ config:
   duplicates: once # once, overwrite (default)
   version: 3 # 1 (old, partial classes, HttpResponseMessage) 2 : (new, Injection, IActionResult)
   routePrefix: api/
+  errorNamespace: Demov3.Errors
   requestBodyType: # overwrite the JSON type that is passed to the method for some operations
     - type: JObject
       filter: # the type is overwritten if one of the filters match
@@ -10,17 +11,13 @@ config:
           - user-patch
         methods:
           - patch
+
 services:
   - apiPath: tests\openapi.yml
-    config:
-      prefix: Pre
     model:
-      namespace: My.Model3
-      targetFolder: ./output/v3/Model
+      namespace: DemoV3.Model
+      targetFolder: ./demo/DemoV3/Model
     function:
-      targetFolder: output/v3
-      namespace: Foo3
-      errorNamespace: My.Errors
-      errorFolder:  ./output/v3/My/Errors
-      name: Foo3
-      useFactory: off
+      targetFolder: demo/DemoV3
+      namespace: DemoV3
+      name: DemoV3

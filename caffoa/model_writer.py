@@ -14,7 +14,8 @@ class ModelWriter(BaseWriter):
         self.output_folder = output_folder
         self.namespace = namespace
         self.additional_imports = list()
-
+        self.json_error_handling = {"class": "CaffoaJsonParseError"}
+        self.error_namespace = None
         self.model_template = self.load_template("ModelTemplate.cs")
         self.prop_template = self.load_template("ModelPropertyTemplate.cs")
         self.enum_prop_template = self.load_template("ModelEnumPropertyTemplate.cs")
@@ -49,6 +50,13 @@ class ModelWriter(BaseWriter):
     def write_model(self, model: ModelObjectData):
         imports = [f"using {key};\n" for key in model.imports]
         imports.extend([f"using {key};\n" for key in self.additional_imports])
+        if self.version >= 3:
+            json_error_namespace = self.json_error_handling.get("namespace", self.error_namespace)
+            if json_error_namespace is None:
+                raise Warning("You need to set either <errorNamespace> or <jsonErrorHandling> with namespace for v3")
+            imports.append(f"using System;\n")
+            imports.append(f"using {json_error_namespace};\n")
+
         # remove duplicates but keep order:
         imports = list(dict.fromkeys(imports))
         all_parents = model.interfaces
@@ -68,8 +76,10 @@ class ModelWriter(BaseWriter):
             model_description = model.description.strip().replace("\n", "\n\t/// ")
             description += f"/// <summary>\n\t/// {model_description}\n\t/// </summary>\n\t"
 
+
         with open(file_name, "w", encoding="utf-8") as f:
             f.write(self.model_template.format(NAMESPACE=self.namespace,
+                                               JSON_ERROR_CLASS=self.json_error_handling['class'],
                                                NAME=model.name,
                                                RAWNAME=model.rawname,
                                                PROPERTIES="\n\n".join(formatted_properties),
@@ -126,7 +136,7 @@ class ModelWriter(BaseWriter):
             enums = f"\n\t\t".join(enums)
             all_enums = ", ".join(formatted_enums.values())
             if None in property.enums.keys():
-                all_enums += ", null"
+                all_enums += f", ({property.typename})null"
             if property.default_value is not None:
                 template_data["DEFAULT"] = " = " + formatted_enums.get(property.default_value, property.default_value)
             enum_list_name = self.enum_list_name.format(uFieldName=to_camelcase(property.name),
@@ -136,7 +146,9 @@ class ModelWriter(BaseWriter):
             template_data['ENUM_NAMES'] = all_enums
             template_data['ENUM_LIST_NAME'] = enum_list_name
             if self.check_enums:
-                template_data['ENUM_CHECK'] = f'if(!{enum_list_name}.Contains(value))\n\t\t\t\t\tthrow new ArgumentOutOfRangeException("{to_camelcase(property.name)}", $"{{value}} is not allowed. Allowed values: {{{enum_list_name}}}");'
+                check = f'if(!{enum_list_name}.Contains(value))\n\t\t\t\t{{\n'
+                check += f'\t\t\t\t\t \n\t\t\t\t\t{{'
+                template_data['ENUM_CHECK'] = f'\t\t\t\t\tthrow new ArgumentOutOfRangeException("{to_camelcase(property.name)}", $"{{value}} is not allowed. Allowed values: {{{enum_list_name}}}");'
             else:
                 template_data['ENUM_CHECK'] = "// set checkEnums=true in config file to have a value check here"
 

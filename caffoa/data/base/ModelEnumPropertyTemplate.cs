@@ -4,8 +4,7 @@
         /// <summary>
         /// immutable array containing all allowed values for "{NAMELOWER}"
         /// </summary>
-        public static readonly ImmutableArray<{TYPE}> {ENUM_LIST_NAME}
-            = new ImmutableArray<{TYPE}>() {{ {ENUM_NAMES} }};
+        public readonly ImmutableArray<{TYPE}> {ENUM_LIST_NAME} = ImmutableArray.Create({ENUM_NAMES});
 
         [JsonIgnore]
         private {TYPE} _{NAMELOWER}{DEFAULT};
@@ -16,7 +15,12 @@
                 return _{NAMELOWER};
             }}
             set {{
-                {ENUM_CHECK}
+                if (!{ENUM_LIST_NAME}.Contains(value))
+                {{
+                    var allowedValues = string.Join(", ", {ENUM_LIST_NAME}.Select(v=>v == null ? "null" : v.ToString()));
+                    throw new ArgumentOutOfRangeException("{NAMELOWER}",
+                        $"{{value}} is not allowed. Allowed values: [{{allowedValues}}]");
+                }}
                 _{NAMELOWER} = value;
             }}
         }}

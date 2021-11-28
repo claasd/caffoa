@@ -13,7 +13,7 @@ class InterfaceWriter(BaseWriter):
         super().__init__(version)
         self.version = version
         self.target_folder = target_folder
-        self.use_factory = False
+        self.use_factory = True if version >= 3 else False
         self.namespace = namespace
         self.imports = list()
         self.request_body_filter = list()
@@ -90,5 +90,3 @@ class InterfaceWriter(BaseWriter):
                                                      PARAMS=formatted_params,
                                                      RESULT=result,
                                                      DOC="\n\t\t/// ".join(endpoint.documentation))
-
-

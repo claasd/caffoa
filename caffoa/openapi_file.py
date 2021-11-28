@@ -56,6 +56,8 @@ class OpenApiFile:
         parser.includes = list(config.get('includes', list()))
         model = parser.parse(self.model_parser())
         writer = ModelWriter(self.version, config["namespace"], config["targetFolder"])
+        writer.error_namespace = self.get_config(config, "errorNamespace", writer.error_namespace)
+        writer.json_error_handling = self.get_config(config, "jsonErrorHandling", writer.json_error_handling)
         writer.additional_imports.extend(config.get("imports", self.base_config.get('imports', list())))
         writer.enum_name = self.get_config(config, "enumName", writer.enum_name)
         writer.enum_list_name = self.get_config(config, "enumListName", writer.enum_list_name)

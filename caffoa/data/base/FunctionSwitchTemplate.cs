@@ -1,5 +1,5 @@
 var jObject = await ParseJson<JObject>(request.Body);
-                var discriminator = jObject["{DISC}"].ToString();
+                var discriminator = jObject["{DISC}"]?.ToString();
                 {VALUE} discriminator switch
                 {{{{
                     {CASES},

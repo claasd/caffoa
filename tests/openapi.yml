@@ -39,24 +39,26 @@ components:
           enum: [simple]
           default: simple
         ageGroup:
-          type: number
-          format: integer
+          type: integer
           enum: [18,40,70,120]
 
       required:
         - type
+        - ageGroup
 
     guestUser:
       type: object
       properties:
         email:
           type: string
+          format: email
         type:
           type: string
           enum: [ guest ]
           default: guest
       required:
         - type
+        - email
 
     userWithId:
       allOf:
@@ -68,6 +70,16 @@ components:
 
     anyUser:
       oneOf:
+        - $ref: "#/components/schemas/user"
+        - $ref: "#/components/schemas/guestUser"
+      discriminator:
+        propertyName: type
+        mapping:
+          simple: "#/components/schemas/user"
+          guest: "#/components/schemas/guestUser"
+
+    anyCompleteUser:
+      oneOf:
         - $ref: "#/components/schemas/userWithId"
         - $ref: "#/components/schemas/guestUser"
       discriminator:
@@ -75,6 +87,7 @@ components:
         mapping:
           simple: "#/components/schemas/userWithId"
           guest: "#/components/schemas/guestUser"
+
 
     pricing:
       type: object
@@ -109,7 +122,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/anyUser"
+                  $ref: "#/components/schemas/anyCompleteUser"
         "400":
           $ref: "#/components/responses/error"
     post:
@@ -129,11 +142,12 @@ paths:
                   simple: "#/components/schemas/user"
                   guest: "#/components/schemas/guestUser"
       responses:
-        "200":
-          description: User was updated
-
         "201":
           description: User was created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/anyCompleteUser"
   "/users/{userId}":
     parameters:
       - name: userId
@@ -159,13 +173,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/anyUser"
+                $ref: "#/components/schemas/anyCompleteUser"
         "201":
           description: User was created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/anyUser"
+                $ref: "#/components/schemas/anyCompleteUser"
 
     patch:
       operationId: user-patch

@@ -118,12 +118,12 @@ class FunctionWriter(BaseWriter):
             params['RESULT'] = f"new StatusCodeResult(result)"
         elif type.is_simple:
             result = self.get_result_handler(type)
-            params['RESULT'] = f"new JsonResult({result}) {{StatusCode = {type.code}}}"
+            params['RESULT'] = f"new JsonResult({result}) {{StatusCode = {type.code}, SerializerSettings = _service.ResponseSerializerSettings }}"
         elif type.base is None:
             params['RESULT'] = "new StatusCodeResult(code)"
             params['VALUE'] = "var code = "
         else:
-            params['RESULT'] = f"new JsonResult(result) {{StatusCode = code}}"
+            params['RESULT'] = f"new JsonResult(result) {{StatusCode = code, SerializerSettings = _service.ResponseSerializerSettings  }}"
             params['VALUE'] = f"var (result, code) = "
         error_infos = [f'("{param.name}", {param.name})' for param in
                        endpoint.parameters]

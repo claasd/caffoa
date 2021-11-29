@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace {NAMESPACE}
 {{
@@ -10,6 +11,15 @@ namespace {NAMESPACE}
     /// </summary>
     public interface {CLASSNAME}Factory
     {{
+        /// <summary>
+        /// returns the actual instance that handles requests
+        /// </summary>
         public {CLASSNAME} Instance(HttpRequest request);
+
+        /// <summary>
+        /// returns JsonSerializerSettings that are used when serializing JSON responses.
+        /// return null to use default serialization
+        /// </summary>
+        public JsonSerializerSettings ResponseSerializerSettings {{ get; }}
     }}
 }}

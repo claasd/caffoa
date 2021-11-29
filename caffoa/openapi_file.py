@@ -89,6 +89,8 @@ class OpenApiFile:
 
         iwriter = InterfaceWriter(self.version, name, namespace, target_folder)
         iwriter.use_factory = self.get_config(config, "useFactory", iwriter.use_factory)
+        if self.version >= 3 and not iwriter.use_factory:
+            raise Warning("You cannot use v3 without factory pattern")
 
         iwriter.imports.extend(self.get_config(config, "imports", list()))
         iwriter.imports.extend(self.imports)

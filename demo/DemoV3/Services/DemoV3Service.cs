@@ -4,7 +4,9 @@ using System.Threading.Tasks;
 using DemoV3.Errors;
 using DemoV3.Model;
 using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 
 namespace DemoV3.Services
 {
@@ -13,11 +15,24 @@ namespace DemoV3.Services
     {
         private readonly UserRepository<UserWithId> _users = new UserRepository<UserWithId>();
         private readonly UserRepository<GuestUser> _guests = new UserRepository<GuestUser>();
+        private IContractResolver _responseContractResolver = new RemoveRequiredContractResolver();
         public IDemoV3Service Instance(HttpRequest request)
         {
             return this;
         }
-        
+
+        public JsonSerializerSettings ResponseSerializerSettings
+        {
+            get
+            {
+                return new JsonSerializerSettings()
+                {
+                    ContractResolver = _responseContractResolver,
+                    DateTimeZoneHandling = DateTimeZoneHandling.Utc
+                };
+            }
+        }
+
         public async Task<IEnumerable<AnyCompleteUser>> UsersGetAsync()
         {
             var result = new List<AnyCompleteUser>();
@@ -51,7 +66,8 @@ namespace DemoV3.Services
             {
                 var newUser = new UserWithId()
                 {
-                    Id = userId
+                    Id = userId,
+                    RegistrationDate = DateTime.Now
                 };
                 newUser.UpdateWithUser(payload);
                 await _users.Add(newUser.Id, newUser);

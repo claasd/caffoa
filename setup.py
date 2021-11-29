@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='caffoa',
-    version='0.34.3',
+    version='0.35.0',
     packages=['caffoa'],
     package_data={
         'caffoa': ['./data/**/*'],

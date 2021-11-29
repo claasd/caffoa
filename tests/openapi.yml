@@ -42,10 +42,11 @@ components:
         ageGroup:
           type: integer
           enum: [18,40,70,120]
+          default: 40
 
       required:
         - type
-        - ageGroup
+        - name
 
     guestUser:
       type: object
@@ -68,6 +69,9 @@ components:
           properties:
             id:
               type: string
+            registrationDate:
+              type: string
+              format: date-time
 
     anyUser:
       oneOf:

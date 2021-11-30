@@ -12,6 +12,7 @@ from caffoa.openapi_file import OpenApiFile
 def execute():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="caffoa.yml", help="Path to config file (Default: caffoa.yml)")
+    parser.add_argument('--clean', action='store_true', help="remove all files with the pattern *.generated.cs")
     args = parser.parse_args()
     with open(args.config, "r", encoding="utf-8") as f:
         data = yaml.safe_load(f)
@@ -29,7 +30,7 @@ def execute():
     version = settings.get("version", 1)
     duplication_handler.init(settings.get("duplicates", "overwrite"))
 
-    if settings.get('clearGeneratedFiles', False):
+    if settings.get('clearGeneratedFiles', args.clean):
         old_files = glob.glob('**/*.generated.cs', recursive=True)
         for file in old_files:
             logging.info(f"Removing {file}")

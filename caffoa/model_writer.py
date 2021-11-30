@@ -50,12 +50,6 @@ class ModelWriter(BaseWriter):
     def write_model(self, model: ModelObjectData):
         imports = [f"using {key};\n" for key in model.imports]
         imports.extend([f"using {key};\n" for key in self.additional_imports])
-        if self.version >= 3:
-            json_error_namespace = self.json_error_handling.get("namespace", self.error_namespace)
-            if json_error_namespace is None:
-                raise Warning("You need to set either <errorNamespace> or <jsonErrorHandling> with namespace for v3")
-            imports.append(f"using System;\n")
-            imports.append(f"using {json_error_namespace};\n")
 
         # remove duplicates but keep order:
         imports = list(dict.fromkeys(imports))
@@ -78,7 +72,6 @@ class ModelWriter(BaseWriter):
 
         with open(file_name, "w", encoding="utf-8") as f:
             f.write(self.model_template.format(NAMESPACE=self.namespace,
-                                               JSON_ERROR_CLASS=self.json_error_handling['class'],
                                                NAME=model.name,
                                                RAWNAME=model.rawname,
                                                PROPERTIES="\n\n".join(formatted_properties),

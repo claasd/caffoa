@@ -7,12 +7,14 @@ namespace {NAMESPACE}
     {{
         public CaffoaClientError() : base(){{}}
         public CaffoaClientError(string msg) : base(msg){{}}
+        public CaffoaClientError(string msg, Exception inner) : base(msg, inner){{}}
         public abstract IActionResult Result {{ get; }}
     }}
 
     public class CaffoaJsonParseError : CaffoaClientError
     {{
         public CaffoaJsonParseError(string msg) : base("Error during JSON parsing of payload: " + msg){{}}
+        public CaffoaJsonParseError(string msg, Exception inner) : base("Error during JSON parsing of payload: " + msg, inner){{}}
 
         public static CaffoaJsonParseError NoContent()
         {{
@@ -21,9 +23,10 @@ namespace {NAMESPACE}
 
         public static CaffoaJsonParseError FromException(Exception err)
         {{
-            while (err.InnerException != null)
-                err = err.InnerException;
-            return new CaffoaJsonParseError(err.GetType().Name + ": " + err.Message);
+            var inner = err;
+            while (inner.InnerException != null)
+                inner = inner.InnerException;
+            return new CaffoaJsonParseError(inner.GetType().Name + ": " + inner.Message, err);
         }}
 
         public static Exception WrongContent(string type, object value, string[] allowedValues)

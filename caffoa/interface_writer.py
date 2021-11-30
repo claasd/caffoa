@@ -31,6 +31,8 @@ class InterfaceWriter(BaseWriter):
             interfaces.extend(self.format_endpoints(ep))
             imports.extend(BodyTypeFilter(self.request_body_filter).additional_imports(ep))
         imports.extend(self.imports)
+        # remove duplicates but keep order:
+        imports = list(dict.fromkeys(imports))
         imports_str = "".join([f"using {imp};\n" for imp in imports])
 
         file_name = os.path.abspath(f"{self.target_folder}/{self.interface_name}.generated.cs")

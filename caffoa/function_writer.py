@@ -188,6 +188,11 @@ class FunctionWriter(BaseWriter):
         )
 
     def write_errors(self, endpoints: List[EndPoint]):
+        file_name = os.path.abspath(f"{self.error_folder}/CaffoaClientError.generated.cs")
+        logging.info(f"Writing Client Error to {file_name}")
+        with open(file_name, "w", encoding="utf-8") as f:
+            f.write(self.caffoa_error_template.format(NAMESPACE=self.error_namespace))
+        return
         error_classes = dict()
         generic_error_classes = dict()
         for endpoint in endpoints:
@@ -204,13 +209,11 @@ class FunctionWriter(BaseWriter):
                             raise Warning(
                                 "The same response object with different error codes is currently not supported")
                     error_classes[name] = response.code
-
+        # remove duplicates but keep order:
+        imports = list(dict.fromkeys(imports))
         imports_str = "".join([f"using {imp};\n" for imp in self.imports])
         os.makedirs(self.error_folder, exist_ok=True)
-        file_name = os.path.abspath(f"{self.error_folder}/CaffoaClientError.generated.cs")
-        logging.info(f"Writing Client Error to {file_name}")
-        with open(file_name, "w", encoding="utf-8") as f:
-            f.write(self.caffoa_error_template.format(NAMESPACE=self.error_namespace))
+
 
         for name, code in error_classes.items():
             if duplication_handler.should_generate("Error/" + name):

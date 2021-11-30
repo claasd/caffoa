@@ -171,10 +171,7 @@ class ModelWriter(BaseWriter):
                 if prop.nullable:
                     special_call = "?" + special_call
             props_update.append(f"{name} = other.{name}{special_call};")
-        if self.version >= 3:
-            splitter = "\n\t\t\t\t"
-        else:
-            splitter = "\n\t\t\t"
+        splitter = "\n\t\t\t"
         formatted = splitter.join(props_update)
         if model.parent:
             formatted = f"UpdateWith{model.parent}(other);{splitter}{formatted}"

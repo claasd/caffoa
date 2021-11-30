@@ -17,13 +17,7 @@ namespace {NAMESPACE} {{
         /// Replaces all fields with the data of the passed object
         /// </summary>
         public void UpdateWith{NAME}({NAME} other) {{
-            try {{
-                {UPDATEPROPS}
-            }} catch({JSON_ERROR_CLASS}) {{
-                throw;
-            }} catch(Exception e) {{
-                throw {JSON_ERROR_CLASS}.FromException(e);
-            }}
+            {UPDATEPROPS}
         }}
 
         /// <summary>
@@ -46,15 +40,7 @@ namespace {NAMESPACE} {{
             }};
             var sourceObject = JObject.FromObject(this);
             sourceObject.Merge(other, mergeSettings);
-            try {{
-                UpdateWith{NAME}(sourceObject.ToObject<{NAME}>());
-            }}
-            catch({JSON_ERROR_CLASS}) {{
-                throw;
-            }}
-            catch(Exception e) {{
-                throw {JSON_ERROR_CLASS}.FromException(e);
-            }}
+            UpdateWith{NAME}(sourceObject.ToObject<{NAME}>());
         }}
     }}
 }}

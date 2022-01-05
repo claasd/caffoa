@@ -1,3 +1,6 @@
+import logging
+import time
+
 from setuptools import setup
 
 with open("README.md", "r") as fh:
@@ -5,7 +8,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='caffoa',
-    version='0.36.0',
+    version='0.37.0',
     packages=['caffoa'],
     package_data={
         'caffoa': ['./data/**/*'],

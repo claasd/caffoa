@@ -1,3 +1,9 @@
+# DEPRECATED
+
+This tool was superseeded by [caffoa.net](https://github.com/claasd/caffoa.net).
+Use caffoa.net as nuget tool to create your open api files.
+
+
 # caffoa: Create Azure Function From Open Api
 
 [![PyPI - License](https://img.shields.io/pypi/l/caffoa)](https://pypi.org/project/caffoa/)

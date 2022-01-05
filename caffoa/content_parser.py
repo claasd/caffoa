@@ -22,7 +22,7 @@ class ContentParser:
 
         if "oneOf" in schema:
             if "discriminator" not in schema:
-                raise Warning("Need discriminator in oneOf")
+                raise Warning()
             discriminator = schema["discriminator"]
             pre_mapping = dict()
             for e_value, e_type in discriminator.get("mapping", dict()).items():

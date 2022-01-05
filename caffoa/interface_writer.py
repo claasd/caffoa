@@ -66,7 +66,7 @@ class InterfaceWriter(BaseWriter):
             result = f"<{type.name}>"
         params = base_params.copy()
         filtered_body = BodyTypeFilter(self.request_body_filter).body_type(endpoint)
-        if filtered_body:
+        if endpoint.needs_content and filtered_body:
             params.append(f"{filtered_body} payload")
             if not self.use_factory:
                 params.append("HttpRequest request")

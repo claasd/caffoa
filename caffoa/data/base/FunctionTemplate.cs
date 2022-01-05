@@ -24,7 +24,7 @@ namespace {NAMESPACE}
             _service = service;
         }}
 {METHODS}
-        public async Task<T> ParseJson<T>(Stream s)
+        public static async Task<T> ParseJson<T>(Stream s)
         {{
             string requestBody = String.Empty;
             using (StreamReader streamReader =  new  StreamReader(s))
@@ -38,7 +38,7 @@ namespace {NAMESPACE}
             }}
         }}
 
-        public T ToObject<T>(JObject jObject)
+        public static T ToObject<T>(JObject jObject)
         {{
             try {{
                 return jObject.ToObject<T>();
